@@ -213,3 +213,81 @@ type Transfer @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# =========================================================
+# ================ RebalanceAdapter Events ================
+# =========================================================
+
+type AuctionCreated @entity(immutable: true) {
+  id: Bytes!
+  auction_isOverCollateralized: Boolean! # bool
+  auction_startTimestamp: BigInt! # uint120
+  auction_endTimestamp: BigInt! # uint120
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type AuctionEnded @entity(immutable: true) {
+  id: Bytes!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CollateralRatiosRebalanceAdapterInitialized @entity(immutable: true) {
+  id: Bytes!
+  minCollateralRatio: BigInt! # uint256
+  targetCollateralRatio: BigInt! # uint256
+  maxCollateralRatio: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DutchAuctionRebalanceAdapterInitialized @entity(immutable: true) {
+  id: Bytes!
+  auctionDuration: BigInt! # uint256
+  initialPriceMultiplier: BigInt! # uint256
+  minPriceMultiplier: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type LeverageTokenSet @entity(immutable: true) {
+  id: Bytes!
+  leverageToken: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type PreLiquidationRebalanceAdapterInitialized @entity(immutable: true) {
+  id: Bytes!
+  collateralRatioThreshold: BigInt! # uint256
+  rebalanceReward: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RebalanceAdapterInitialized @entity(immutable: true) {
+  id: Bytes!
+  authorizedCreator: Bytes! # address
+  leverageManager: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Take @entity(immutable: true) {
+  id: Bytes!
+  taker: Bytes! # address
+  amountIn: BigInt! # uint256
+  amountOut: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

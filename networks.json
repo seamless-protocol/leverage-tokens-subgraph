@@ -6,6 +6,9 @@
     },
     "LeverageToken": {
       "address": "0x15aD877B54859511Ff8f4d239347E93dFf8BBc25"
+    },
+    "RebalanceAdapter": {
+      "address": "0x37767d8102966577A4f5c7930e0657C592E5061b"
     }
   }
 }

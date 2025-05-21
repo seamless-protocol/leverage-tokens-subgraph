@@ -104,3 +104,44 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/leverage-token.ts
+  - kind: ethereum
+    name: RebalanceAdapter
+    network: base
+    source:
+      address: "0x37767d8102966577A4f5c7930e0657C592E5061b"
+      abi: RebalanceAdapter
+      startBlock: 30530940
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - AuctionCreated
+        - AuctionEnded
+        - CollateralRatiosRebalanceAdapterInitialized
+        - DutchAuctionRebalanceAdapterInitialized
+        - LeverageTokenSet
+        - PreLiquidationRebalanceAdapterInitialized
+        - RebalanceAdapterInitialized
+        - Take
+      abis:
+        - name: RebalanceAdapter
+          file: ./abis/RebalanceAdapter.json
+      eventHandlers:
+        - event: AuctionCreated((bool,uint120,uint120))
+          handler: handleAuctionCreated
+        - event: AuctionEnded()
+          handler: handleAuctionEnded
+        - event: CollateralRatiosRebalanceAdapterInitialized(uint256,uint256,uint256)
+          handler: handleCollateralRatiosRebalanceAdapterInitialized
+        - event: DutchAuctionRebalanceAdapterInitialized(uint256,uint256,uint256)
+          handler: handleDutchAuctionRebalanceAdapterInitialized
+        - event: LeverageTokenSet(address)
+          handler: handleLeverageTokenSet
+        - event: PreLiquidationRebalanceAdapterInitialized(uint256,uint256)
+          handler: handlePreLiquidationRebalanceAdapterInitialized
+        - event: RebalanceAdapterInitialized(indexed address,indexed address)
+          handler: handleRebalanceAdapterInitialized
+        - event: Take(indexed address,uint256,uint256)
+          handler: handleTake
+      file: ./src/rebalance-adapter.ts
