@@ -1,0 +1,8 @@
+{
+  "base": {
+    "LeverageManager": {
+      "address": "0x7F2Fa32C991fD2F8dF3EB23C394f550376e9b30d",
+      "startBlock": 30530940
+    }
+  }
+}
