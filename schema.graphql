@@ -291,3 +291,186 @@ type Take @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+type AccrueInterest @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  prevBorrowRate: BigInt! # uint256
+  interest: BigInt! # uint256
+  feeShares: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Borrow @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  caller: Bytes! # address
+  onBehalf: Bytes! # address
+  receiver: Bytes! # address
+  assets: BigInt! # uint256
+  shares: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CreateMarket @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  marketParams_loanToken: Bytes! # address
+  marketParams_collateralToken: Bytes! # address
+  marketParams_oracle: Bytes! # address
+  marketParams_irm: Bytes! # address
+  marketParams_lltv: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type EnableIrm @entity(immutable: true) {
+  id: Bytes!
+  irm: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type EnableLltv @entity(immutable: true) {
+  id: Bytes!
+  lltv: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FlashLoan @entity(immutable: true) {
+  id: Bytes!
+  caller: Bytes! # address
+  token: Bytes! # address
+  assets: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type IncrementNonce @entity(immutable: true) {
+  id: Bytes!
+  caller: Bytes! # address
+  authorizer: Bytes! # address
+  usedNonce: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Liquidate @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  caller: Bytes! # address
+  borrower: Bytes! # address
+  repaidAssets: BigInt! # uint256
+  repaidShares: BigInt! # uint256
+  seizedAssets: BigInt! # uint256
+  badDebtAssets: BigInt! # uint256
+  badDebtShares: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Repay @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  caller: Bytes! # address
+  onBehalf: Bytes! # address
+  assets: BigInt! # uint256
+  shares: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SetAuthorization @entity(immutable: true) {
+  id: Bytes!
+  caller: Bytes! # address
+  authorizer: Bytes! # address
+  authorized: Bytes! # address
+  newIsAuthorized: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SetFee @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  newFee: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SetFeeRecipient @entity(immutable: true) {
+  id: Bytes!
+  newFeeRecipient: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SetOwner @entity(immutable: true) {
+  id: Bytes!
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Supply @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  caller: Bytes! # address
+  onBehalf: Bytes! # address
+  assets: BigInt! # uint256
+  shares: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SupplyCollateral @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  caller: Bytes! # address
+  onBehalf: Bytes! # address
+  assets: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Withdraw @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  caller: Bytes! # address
+  onBehalf: Bytes! # address
+  receiver: Bytes! # address
+  assets: BigInt! # uint256
+  shares: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type WithdrawCollateral @entity(immutable: true) {
+  id: Bytes!
+  internal_id: Bytes! # bytes32
+  caller: Bytes! # address
+  onBehalf: Bytes! # address
+  receiver: Bytes! # address
+  assets: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
