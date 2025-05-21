@@ -44,17 +44,20 @@ dataSources:
           handler: handleLeverageManagerInitialized
         - event: LeverageTokenActionFeeSet(indexed address,indexed uint8,uint256)
           handler: handleLeverageTokenActionFeeSet
-        - event: LeverageTokenCreated(indexed address,address,address,(address,address,uint256,uint256))
+        - event: LeverageTokenCreated(indexed
+            address,address,address,(address,address,uint256,uint256))
           handler: handleLeverageTokenCreated
         - event: ManagementFeeCharged(indexed address,uint256)
           handler: handleManagementFeeCharged
         - event: ManagementFeeSet(indexed address,uint256)
           handler: handleManagementFeeSet
-        - event: Mint(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256,uint256))
+        - event: Mint(indexed address,indexed
+            address,(uint256,uint256,uint256,uint256,uint256,uint256))
           handler: handleMint
         - event: Rebalance(indexed address,indexed address,(uint8,uint256)[])
           handler: handleRebalance
-        - event: Redeem(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256,uint256))
+        - event: Redeem(indexed address,indexed
+            address,(uint256,uint256,uint256,uint256,uint256,uint256))
           handler: handleRedeem
         - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
           handler: handleRoleAdminChanged
@@ -69,3 +72,35 @@ dataSources:
         - event: Upgraded(indexed address)
           handler: handleUpgraded
       file: ./src/leverage-manager.ts
+  - kind: ethereum
+    name: LeverageToken
+    network: base
+    source:
+      address: "0x15aD877B54859511Ff8f4d239347E93dFf8BBc25"
+      abi: LeverageToken
+      startBlock: 30530940
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - EIP712DomainChanged
+        - LeverageTokenInitialized
+        - OwnershipTransferred
+        - Transfer
+      abis:
+        - name: LeverageToken
+          file: ./abis/LeverageToken.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: LeverageTokenInitialized(string,string)
+          handler: handleLeverageTokenInitialized
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/leverage-token.ts

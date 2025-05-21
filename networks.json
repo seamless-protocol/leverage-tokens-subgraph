@@ -3,6 +3,9 @@
     "LeverageManager": {
       "address": "0x7F2Fa32C991fD2F8dF3EB23C394f550376e9b30d",
       "startBlock": 30530940
+    },
+    "LeverageToken": {
+      "address": "0x15aD877B54859511Ff8f4d239347E93dFf8BBc25"
     }
   }
 }
