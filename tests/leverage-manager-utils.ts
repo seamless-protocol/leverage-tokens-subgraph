@@ -1,8 +1,6 @@
-import { newMockEvent } from "matchstick-as"
-import { ethereum, BigInt, Address, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
   DefaultManagementFeeAtCreationSet,
-  Initialized,
   LeverageManagerInitialized,
   LeverageTokenActionFeeSet,
   LeverageTokenCreated,
@@ -16,8 +14,9 @@ import {
   RoleRevoked,
   TreasuryActionFeeSet,
   TreasurySet,
-  Upgraded
 } from "../generated/LeverageManager/LeverageManager"
+
+import { newMockEvent } from "matchstick-as"
 
 export function createDefaultManagementFeeAtCreationSetEvent(
   fee: BigInt
@@ -32,21 +31,6 @@ export function createDefaultManagementFeeAtCreationSetEvent(
   )
 
   return defaultManagementFeeAtCreationSetEvent
-}
-
-export function createInitializedEvent(version: BigInt): Initialized {
-  let initializedEvent = changetype<Initialized>(newMockEvent())
-
-  initializedEvent.parameters = new Array()
-
-  initializedEvent.parameters.push(
-    new ethereum.EventParam(
-      "version",
-      ethereum.Value.fromUnsignedBigInt(version)
-    )
-  )
-
-  return initializedEvent
 }
 
 export function createLeverageManagerInitializedEvent(
@@ -339,19 +323,4 @@ export function createTreasurySetEvent(treasury: Address): TreasurySet {
   )
 
   return treasurySetEvent
-}
-
-export function createUpgradedEvent(implementation: Address): Upgraded {
-  let upgradedEvent = changetype<Upgraded>(newMockEvent())
-
-  upgradedEvent.parameters = new Array()
-
-  upgradedEvent.parameters.push(
-    new ethereum.EventParam(
-      "implementation",
-      ethereum.Value.fromAddress(implementation)
-    )
-  )
-
-  return upgradedEvent
 }

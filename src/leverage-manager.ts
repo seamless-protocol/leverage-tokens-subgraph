@@ -1,24 +1,5 @@
 import {
-  DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
-  Initialized as InitializedEvent,
-  LeverageManagerInitialized as LeverageManagerInitializedEvent,
-  LeverageTokenActionFeeSet as LeverageTokenActionFeeSetEvent,
-  LeverageTokenCreated as LeverageTokenCreatedEvent,
-  ManagementFeeCharged as ManagementFeeChargedEvent,
-  ManagementFeeSet as ManagementFeeSetEvent,
-  Mint as MintEvent,
-  Rebalance as RebalanceEvent,
-  Redeem as RedeemEvent,
-  RoleAdminChanged as RoleAdminChangedEvent,
-  RoleGranted as RoleGrantedEvent,
-  RoleRevoked as RoleRevokedEvent,
-  TreasuryActionFeeSet as TreasuryActionFeeSetEvent,
-  TreasurySet as TreasurySetEvent,
-  Upgraded as UpgradedEvent
-} from "../generated/LeverageManager/LeverageManager"
-import {
   DefaultManagementFeeAtCreationSet,
-  Initialized,
   LeverageManagerInitialized,
   LeverageTokenActionFeeSet,
   LeverageTokenCreated,
@@ -31,9 +12,25 @@ import {
   RoleGranted,
   RoleRevoked,
   TreasuryActionFeeSet,
-  TreasurySet,
-  Upgraded
+  TreasurySet
 } from "../generated/schema"
+import {
+  DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
+  LeverageManagerInitialized as LeverageManagerInitializedEvent,
+  LeverageTokenActionFeeSet as LeverageTokenActionFeeSetEvent,
+  LeverageTokenCreated as LeverageTokenCreatedEvent,
+  ManagementFeeCharged as ManagementFeeChargedEvent,
+  ManagementFeeSet as ManagementFeeSetEvent,
+  Mint as MintEvent,
+  Rebalance as RebalanceEvent,
+  Redeem as RedeemEvent,
+  RoleAdminChanged as RoleAdminChangedEvent,
+  RoleGranted as RoleGrantedEvent,
+  RoleRevoked as RoleRevokedEvent,
+  TreasuryActionFeeSet as TreasuryActionFeeSetEvent,
+  TreasurySet as TreasurySetEvent
+} from "../generated/LeverageManager/LeverageManager"
+
 import { Bytes } from "@graphprotocol/graph-ts"
 
 export function handleDefaultManagementFeeAtCreationSet(
@@ -43,19 +40,6 @@ export function handleDefaultManagementFeeAtCreationSet(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.fee = event.params.fee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleInitialized(event: InitializedEvent): void {
-  let entity = new Initialized(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.version = event.params.version
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
@@ -268,19 +252,6 @@ export function handleTreasurySet(event: TreasurySetEvent): void {
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.treasury = event.params.treasury
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleUpgraded(event: UpgradedEvent): void {
-  let entity = new Upgraded(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.implementation = event.params.implementation
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp

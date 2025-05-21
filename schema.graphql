@@ -11,14 +11,6 @@ type DefaultManagementFeeAtCreationSet @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type Initialized @entity(immutable: true) {
-  id: Bytes!
-  version: BigInt! # uint64
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
 type LeverageManagerInitialized @entity(immutable: true) {
   id: Bytes!
   leverageTokenFactory: Bytes! # address
@@ -156,14 +148,6 @@ type TreasurySet @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type Upgraded @entity(immutable: true) {
-  id: Bytes!
-  implementation: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
 # =====================================================
 # ================ LeverageToken Events ================
 # =====================================================
@@ -291,6 +275,11 @@ type Take @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# =========================================================
+# ================ Morpho Events ==========================
+# =========================================================
+
 type AccrueInterest @entity(immutable: true) {
   id: Bytes!
   internal_id: Bytes! # bytes32
