@@ -8,9 +8,9 @@ dataSources:
     name: LeverageManager
     network: base
     source:
-      address: "0xE594C57812a2f9fF9C2581E0Ca8fcBAEf0451793"
+      address: "{{base.LeverageManager.address}}"
       abi: LeverageManager
-      startBlock: 30530939
+      startBlock: {{base.LeverageManager.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -70,9 +70,9 @@ dataSources:
     name: RebalanceAdapter
     network: base
     source:
-      address: "0x37767d8102966577A4f5c7930e0657C592E5061b"
+      address: "{{base.RebalanceAdapter.address}}"
       abi: RebalanceAdapter
-      startBlock: 30530939
+      startBlock: {{base.RebalanceAdapter.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -103,9 +103,9 @@ dataSources:
     name: MorphoBlue
     network: base
     source:
-      address: "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb"
+      address: "{{base.MorphoBlue.address}}"
       abi: MorphoBlue
-      startBlock: 30530939
+      startBlock: {{base.MorphoBlue.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
