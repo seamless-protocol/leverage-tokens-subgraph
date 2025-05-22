@@ -77,14 +77,13 @@ type LeverageToken @entity(immutable: false) {
     " Current total debt price in USD "
     totalDebtUSD: BigDecimal!
 
-    # TODO: Do we need both?
     " Current total equity in collateral asset "
     totalEquityInCollateral: BigInt!
     " Current total equity in debt asset "
     totalEquityInDebt: BigInt!
-
     " Current total equity price in USD "
     totalEquityUSD: BigDecimal!
+
     " Current total supply of the LeverageToken "
     totalSupply: BigInt!
     " Current total number of unique LeverageToken holders "
@@ -119,6 +118,8 @@ type LeverageToken @entity(immutable: false) {
     # collateralUpdates: [CollateralUpdate!]! @derivedFrom(field: "leverageToken")
     # " Historical debt updates "
     # debtUpdates: [DebtUpdate!]! @derivedFrom(field: "leverageToken")
+    # " Historical equity updates "
+    # equityUpdates: [EquityUpdate!]! @derivedFrom(field: "leverageToken")
     # " Historical mint events "
     # mints: [Mint!]! @derivedFrom(field: "leverageToken")
     # " Historical redeem events "
@@ -265,6 +266,29 @@ type DebtUpdate @entity(timeseries: true) {
     debtChange: BigInt!
     " The change in debt amount in USD at time of debt update "
     debtChangeUSD: BigDecimal!
+    " Timestamp of the update "
+    timestamp: Timestamp!
+    " Block number of the update "
+    blockNumber: BigInt!
+}
+
+type EquityUpdate @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The LeverageToken that the equity update is for "
+    leverageToken: LeverageToken!
+    " The total equity amount in collateral after this update "
+    totalEquityInCollateral: BigInt!
+    " The total equity amount in debt after this update "
+    totalEquityInDebt: BigInt!
+    " The total equity amount in USD after this update "
+    totalEquityUSD: BigDecimal!
+    " The change in equity amount in collateral "
+    equityChangeInCollateral: BigInt!
+    " The change in equity amount in debt "
+    equityChangeInDebt: BigInt!
+    " The change in equity amount in USD at time of equity update "
+    equityChangeUSD: BigDecimal!
     " Timestamp of the update "
     timestamp: Timestamp!
     " Block number of the update "
