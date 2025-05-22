@@ -29,6 +29,8 @@ dataSources:
       abis:
         - name: LeverageManager
           file: ./abis/LeverageManager.json
+        - name: LeverageToken
+          file: ./abis/LeverageToken.json
         - name: MorphoLendingAdapter
           file: ./abis/MorphoLendingAdapter.json
       eventHandlers:
@@ -64,27 +66,6 @@ dataSources:
         - event: TreasurySet(address)
           handler: handleTreasurySet
       file: ./src/leverage-manager.ts
-  - kind: ethereum
-    name: LeverageTokenFactory
-    network: base
-    source:
-      address: "0xeba55192c97CfBb5BE73Be94538b0CF9FA601CB0"
-      abi: LeverageTokenFactory
-      startBlock: 30530939
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.9
-      language: wasm/assemblyscript
-      entities: []
-      abis:
-        - name: LeverageTokenFactory
-          file: ./abis/LeverageTokenFactory.json
-        - name: LeverageToken
-          file: ./abis/LeverageToken.json
-      eventHandlers:
-        - event: BeaconProxyCreated(indexed address,bytes,bytes32)
-          handler: handleLeverageTokenCreated
-      file: ./src/leverage-token-factory.ts
   - kind: ethereum
     name: RebalanceAdapter
     network: base

@@ -23,7 +23,7 @@ import { MorphoLendingAdapter } from "../generated/templates/MorphoLendingAdapte
 import { LeverageToken as LeverageTokenContract } from "../generated/templates/LeverageToken/LeverageToken"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
-import { ExternalAction, getLeverageManager, LendingAdapterType, MAX_UINT256_STRING } from "./constants"
+import { ExternalAction, LendingAdapterType, MAX_UINT256_STRING, ADDRESSES } from "./constants"
 
 export function handleDefaultManagementFeeAtCreationSet(
   event: DefaultManagementFeeAtCreationSetEvent
@@ -181,6 +181,10 @@ export function handleTreasurySet(event: TreasurySetEvent): void {
 
   leverageManager.treasury = event.params.treasury
   leverageManager.save()
+}
+
+export function getLeverageManager(): LeverageManager | null {
+  return LeverageManager.load(Address.fromString(ADDRESSES.LEVERAGE_MANAGER))
 }
 
 function getLeverageManagerStub(address: Address): LeverageManager {
