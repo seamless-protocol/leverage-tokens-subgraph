@@ -1,1 +1,0 @@
-// Placeholder for contract bindings to work with `graph codegen`

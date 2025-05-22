@@ -1,7 +1,7 @@
 import {
   LendingAdapter,
   LeverageManager,
-  LeverageToken
+  LeverageToken,
 } from "../generated/schema"
 import {
   DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
@@ -19,9 +19,9 @@ import {
   TreasuryActionFeeSet as TreasuryActionFeeSetEvent,
   TreasurySet as TreasurySetEvent
 } from "../generated/LeverageManager/LeverageManager"
-import { MorphoLendingAdapter } from "../generated/templates/MorphoLendingAdapter/MorphoLendingAdapter"
 import { LeverageToken as LeverageTokenContract } from "../generated/templates/LeverageToken/LeverageToken"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
+import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 import { ExternalAction, LendingAdapterType, MAX_UINT256_STRING, ADDRESSES } from "./constants"
 
@@ -216,7 +216,7 @@ function initLendingAdapter(address: Address): LendingAdapter {
   // or by try / catch querying the market id on the lending adapter contract
   lendingAdapter.type = LendingAdapterType.MORPHO
   if (lendingAdapter.type === LendingAdapterType.MORPHO) {
-    const morphoLendingAdapter = MorphoLendingAdapter.bind(address)
+    const morphoLendingAdapter = MorphoLendingAdapterContract.bind(address)
 
     const marketId = morphoLendingAdapter.morphoMarketId();
     const marketParams = morphoLendingAdapter.marketParams();

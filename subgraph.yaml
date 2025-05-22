@@ -163,17 +163,3 @@ templates:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/leverage-token.ts
-  - name: MorphoLendingAdapter
-    kind: ethereum/contract
-    network: base
-    source:
-      abi: MorphoLendingAdapter
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.9
-      language: wasm/assemblyscript
-      entities: []
-      abis:
-        - name: MorphoLendingAdapter
-          file: ./abis/MorphoLendingAdapter.json
-      file: ./src/morpho-lending-adapter.ts
