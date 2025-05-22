@@ -16,20 +16,16 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - DefaultManagementFeeAtCreationSet
-        - LeverageManagerInitialized
-        - LeverageTokenActionFeeSet
-        - LeverageTokenCreated
-        - ManagementFeeCharged
-        - ManagementFeeSet
+        - CollateralUpdate
+        - DebtUpdate
+        - LendingAdapter
+        - LeverageManager
+        - LeverageToken
         - Mint
         - Rebalance
+        - RebalanceAction
         - Redeem
-        - RoleAdminChanged
-        - RoleGranted
-        - RoleRevoked
-        - TreasuryActionFeeSet
-        - TreasurySet
+        - User
       abis:
         - name: LeverageManager
           file: ./abis/LeverageManager.json
@@ -133,8 +129,7 @@ dataSources:
       kind: ethereum/events
       apiVersion: 0.0.9
       language: wasm/assemblyscript
-      entities:
-        - Liquidate
+      entities: []
       abis:
         - name: MorphoBlue
           file: ./abis/MorphoBlue.json
