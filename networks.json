@@ -2,19 +2,19 @@
   "base": {
     "LeverageManager": {
       "address": "0xE594C57812a2f9fF9C2581E0Ca8fcBAEf0451793",
-      "startBlock": 30530940
+      "startBlock": 30530939
     },
     "RebalanceAdapter": {
       "address": "0x37767d8102966577A4f5c7930e0657C592E5061b",
-      "startBlock": 30530940
+      "startBlock": 30530939
     },
     "MorphoBlue": {
       "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
-      "startBlock": 30530940
+      "startBlock": 30530939
     },
     "LeverageTokenFactory": {
       "address": "0xeba55192c97CfBb5BE73Be94538b0CF9FA601CB0",
-      "startBlock": 30530940
+      "startBlock": 30530939
     }
   }
 }

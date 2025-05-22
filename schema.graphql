@@ -3,7 +3,7 @@ enum LendingAdapterType {
     OTHER
 }
 
-type LeverageManager @entity(immutable: true) {
+type LeverageManager @entity(immutable: false) {
     " Address of the LeverageManager "
     id: Bytes!
     " Admin address of the LeverageManager "
@@ -15,9 +15,9 @@ type LeverageManager @entity(immutable: true) {
     " LeverageToken factory address of the LeverageManager "
     leverageTokenFactory: Bytes!
     " All LeverageTokens managed by this LeverageManager "
-    leverageTokens: [LeverageToken!]!
+    leverageTokens: [LeverageToken!]! @derivedFrom(field: "leverageManager")
     " Total number of LeverageTokens managed by this LeverageManager "
-    totalLeverageTokens: BigInt!
+    numLeverageTokens: BigInt!
     " Total collateral across all LeverageTokens managed by this LeverageManager "
     totalCollateral: BigInt!
     " Total collateral price in USD across all LeverageTokens managed by this LeverageManager "
@@ -38,6 +38,8 @@ type LeverageToken @entity(immutable: true) {
 
     " Address of the LeverageToken "
     id: Bytes!
+    " The LeverageManager that manages this LeverageToken "
+    leverageManager: LeverageManager!
     " Name of the LeverageToken "
     name: String!
     " Symbol of the LeverageToken "

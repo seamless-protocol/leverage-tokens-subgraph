@@ -7,7 +7,7 @@ import {
   LeverageToken,
 } from "../generated/schema"
 import { LeverageToken as LeverageTokenContract } from "../generated/templates/LeverageToken/LeverageToken"
-import { LendingAdapterType } from "./constants"
+import { getLeverageManager, LendingAdapterType } from "./constants"
 
 export function handleLeverageTokenCreated(event: BeaconProxyCreatedEvent): void {
   let lendingAdapter = LendingAdapter.load(Address.zero())
@@ -20,9 +20,15 @@ export function handleLeverageTokenCreated(event: BeaconProxyCreatedEvent): void
     lendingAdapter.save()
   }
 
+  let leverageManager = getLeverageManager()
+  if (!leverageManager) {
+    return
+  }
+
   let leverageToken = new LeverageToken(event.params.proxy)
   let leverageTokenContract = LeverageTokenContract.bind(event.params.proxy)
 
+  leverageToken.leverageManager = leverageManager.id
   leverageToken.name = leverageTokenContract.name()
   leverageToken.symbol = leverageTokenContract.symbol()
   leverageToken.lendingAdapter = lendingAdapter.id

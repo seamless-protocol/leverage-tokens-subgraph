@@ -1,5 +1,6 @@
 import {
   LendingAdapter,
+  LeverageManager,
   LeverageToken,
   ManagementFeeCharged,
   Mint,
@@ -23,8 +24,8 @@ import {
   TreasurySet as TreasurySetEvent
 } from "../generated/LeverageManager/LeverageManager"
 import { MorphoLendingAdapter } from "../generated/templates/MorphoLendingAdapter/MorphoLendingAdapter"
-import { Bytes } from "@graphprotocol/graph-ts"
-import { LendingAdapterType } from "./constants"
+import { Address, BigDecimal, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { getLeverageManager, LendingAdapterType } from "./constants"
 
 export function handleDefaultManagementFeeAtCreationSet(
   event: DefaultManagementFeeAtCreationSetEvent
@@ -34,6 +35,20 @@ export function handleDefaultManagementFeeAtCreationSet(
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
 ): void {
+  let leverageManager = new LeverageManager(event.address)
+
+  leverageManager.admin = Address.zero()
+  leverageManager.feeManagerRole = Address.zero()
+  leverageManager.treasury = Address.zero()
+  leverageManager.leverageTokenFactory = Address.zero()
+  leverageManager.numLeverageTokens = BigInt.zero()
+  leverageManager.totalCollateral = BigInt.zero()
+  leverageManager.totalCollateralUSD = BigDecimal.zero()
+  leverageManager.totalDebt = BigInt.zero()
+  leverageManager.totalDebtUSD = BigDecimal.zero()
+  leverageManager.totalHolders = BigInt.zero()
+
+  leverageManager.save()
 }
 
 export function handleLeverageTokenActionFeeSet(
@@ -71,6 +86,12 @@ export function handleLeverageTokenCreated(
     leverageToken.rebalanceAdapter = event.params.config.rebalanceAdapter
 
     leverageToken.save()
+
+    const leverageManager = getLeverageManager()
+    if (leverageManager) {
+      leverageManager.numLeverageTokens = leverageManager.numLeverageTokens.plus(BigInt.fromI32(1))
+      leverageManager.save()
+    }
   }
 }
 
