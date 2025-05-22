@@ -68,8 +68,6 @@ type LeverageToken @entity(immutable: false) {
 
     # ======== Leverage Position Balances ========
 
-    # " All positions in this LeverageToken "
-    # positions: [Position!]! @derivedFrom(field: "leverageToken")
     " Current total collateral across all positions "
     totalCollateral: BigInt!
     " Current total collateral price in USD "
@@ -87,9 +85,9 @@ type LeverageToken @entity(immutable: false) {
 
     " Current total equity price in USD "
     totalEquityUSD: BigDecimal!
-    " Total supply of the LeverageToken "
+    " Current total supply of the LeverageToken "
     totalSupply: BigInt!
-    " Total number of unique LeverageToken holders "
+    " Current total number of unique LeverageToken holders "
     totalHolders: BigInt!
 
     # ======== Fees Earned ========
@@ -127,6 +125,8 @@ type LeverageToken @entity(immutable: false) {
     # redeems: [Redeem!]! @derivedFrom(field: "leverageToken")
     # " Historical rebalances "
     # rebalances: [Rebalance!]! @derivedFrom(field: "leverageToken")
+    # " Historical position updates "
+    # positionUpdates: [Position!]! @derivedFrom(field: "leverageToken")
 
     # ======== Additional Metadata ========
 
@@ -152,7 +152,7 @@ type LendingAdapter @entity(immutable: true) {
 type User @entity(immutable: false) {
     " Address of the user "
     id: Bytes!
-    # " All positions that the user owns "
+    # " Historical positions that the user has had "
     # positions: [Position!]! @derivedFrom(field: "user")
 }
 
