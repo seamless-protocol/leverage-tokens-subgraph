@@ -3,6 +3,13 @@ enum LendingAdapterType {
     OTHER
 }
 
+enum RebalanceActionType {
+    ADD_COLLATERAL
+    REMOVE_COLLATERAL
+    BORROW
+    REPAY
+}
+
 type LeverageManager @entity(immutable: false) {
     " Address of the LeverageManager "
     id: Bytes!
@@ -30,11 +37,8 @@ type LeverageManager @entity(immutable: false) {
     totalHolders: BigInt!
 }
 
-
-type LeverageToken @entity(immutable: true) {
-    # ===============================
+type LeverageToken @entity(immutable: false) {
     # ======== Configuration ========
-    # ===============================
 
     " Address of the LeverageToken "
     id: Bytes!
@@ -49,9 +53,7 @@ type LeverageToken @entity(immutable: true) {
     " The RebalanceAdapter used by this LeverageToken "
     rebalanceAdapter: Bytes!
 
-    # ======================
     # ======== Fees ========
-    # ======================
 
     " Management fee for this LeverageToken "
     managementFee: BigInt!
@@ -64,9 +66,7 @@ type LeverageToken @entity(immutable: true) {
     " Redeem token action fee for this LeverageToken "
     redeemTokenActionFee: BigInt!
 
-    # # ============================================
-    # # ======== Leverage Position Balances ========
-    # # ============================================
+    # ======== Leverage Position Balances ========
 
     # " All positions in this LeverageToken "
     # positions: [Position!]! @derivedFrom(field: "leverageToken")
@@ -79,7 +79,7 @@ type LeverageToken @entity(immutable: true) {
     " Current total debt price in USD "
     totalDebtUSD: BigDecimal!
 
-    # # Do we need both?
+    # TODO: Do we need both?
     " Current total equity in collateral asset "
     totalEquityInCollateral: BigInt!
     " Current total equity in debt asset "
@@ -92,9 +92,7 @@ type LeverageToken @entity(immutable: true) {
     " Total number of unique LeverageToken holders "
     totalHolders: BigInt!
 
-    # # =============================
-    # # ======== Fees Earned ========
-    # # =============================
+    # ======== Fees Earned ========
 
     " Total mint token action fees earned "
     totalMintTokenActionFees: BigInt!
@@ -117,9 +115,7 @@ type LeverageToken @entity(immutable: true) {
     " Total management fees earned in USD "
     totalManagementFeesUSD: BigDecimal!
 
-    # # =================================
-    # # ======== Historical Data ========
-    # # =================================
+    # ======== Historical Data ========
 
     # " Historical collateral updates "
     # collateralUpdates: [CollateralUpdate!]! @derivedFrom(field: "leverageToken")
@@ -132,9 +128,7 @@ type LeverageToken @entity(immutable: true) {
     # " Historical rebalances "
     # rebalances: [Rebalance!]! @derivedFrom(field: "leverageToken")
 
-    # # =====================================
-    # # ======== Additional Metadata ========
-    # # =====================================
+    # ======== Additional Metadata ========
 
     " Creation timestamp "
     createdTimestamp: BigInt!
@@ -155,58 +149,139 @@ type LendingAdapter @entity(immutable: true) {
     debtAsset: Bytes!
 }
 
+type User @entity(immutable: false) {
+    " Address of the user "
+    id: Bytes!
+    # " All positions that the user owns "
+    # positions: [Position!]! @derivedFrom(field: "user")
+}
+
+type Mint @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " Address of the LeverageToken "
+    leverageToken: LeverageToken!
+    " User who made the mint "
+    user: User!
+    " Amount of LeverageToken minted "
+    amount: BigInt!
+    " Collateral amount added to the position "
+    collateralAmount: BigInt!
+    " Collateral amount added in USD at time of mint "
+    collateralAmountUSD: BigDecimal!
+    " Debt amount added to the position "
+    debtAmount: BigInt!
+    " Debt amount added in USD at time of mint "
+    debtAmountUSD: BigDecimal!
+    " Token action fee for the mint "
+    tokenActionFee: BigInt!
+    " Treasury action fee for the mint "
+    treasuryActionFee: BigInt!
+    " Timestamp of the mint "
+    timestamp: Timestamp!
+    " Block number of the mint "
+    blockNumber: BigInt!
+}
+
+type Redeem @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " Address of the LeverageToken "
+    leverageToken: LeverageToken!
+    " User that made the redeem "
+    user: User!
+    " Amount of LeverageToken redeemed "
+    amount: BigInt!
+    " Collateral amount removed from the position "
+    collateralAmount: BigInt!
+    " Collateral amount removed in USD at time of redeem "
+    collateralAmountUSD: BigDecimal!
+    " Debt amount removed from the position "
+    debtAmount: BigInt!
+    " Debt amount removed in USD at time of redeem "
+    debtAmountUSD: BigDecimal!
+    " Token action fee for the redeem "
+    tokenActionFee: BigInt!
+    " Treasury action fee for the redeem "
+    treasuryActionFee: BigInt!
+    " Timestamp of the redeem "
+    timestamp: Timestamp!
+    " Block number of the redeem "
+    blockNumber: BigInt!
+}
+
+type Rebalance @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The LeverageToken that the rebalance is for "
+    leverageToken: LeverageToken!
+    " Rebalance actions "
+    actions: [RebalanceAction!]!
+    " The timestamp of the rebalance "
+    timestamp: Timestamp!
+    " The block number of the rebalance "
+    blockNumber: BigInt!
+}
+
+type RebalanceAction @entity(immutable: true) {
+    id: Bytes!
+    " The type of rebalance action "
+    type: RebalanceActionType!
+    " The amount of collateral or debt added or removed, depending on the action type "
+    amount: BigInt!
+    " The amount of collateral or debt added or removed in USD at time of rebalance "
+    amountUSD: BigDecimal!
+}
+
+type CollateralUpdate @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The LeverageToken that the collateral update is for "
+    leverageToken: LeverageToken!
+    " The total collateral amount after this update "
+    totalCollateral: BigInt!
+    " The total collateral amount in USD after this update "
+    totalCollateralUSD: BigDecimal!
+    " The change in collateral amount "
+    collateralChange: BigInt!
+    " The change in collateral amount in USD at time of collateral update "
+    collateralChangeUSD: BigDecimal!
+    " Timestamp of the update "
+    timestamp: Timestamp!
+    " Block number of the update "
+    blockNumber: BigInt!
+}
+
+type DebtUpdate @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The LeverageToken that the debt update is for "
+    leverageToken: LeverageToken!
+    " The total debt amount after this update "
+    totalDebt: BigInt!
+    " The total debt amount in USD after this update "
+    totalDebtUSD: BigDecimal!
+    " The change in debt amount "
+    debtChange: BigInt!
+    " The change in debt amount in USD at time of debt update "
+    debtChangeUSD: BigDecimal!
+    " Timestamp of the update "
+    timestamp: Timestamp!
+    " Block number of the update "
+    blockNumber: BigInt!
+}
 
 # ========================================
 # ======== LeverageManager Events ========
 # ========================================
 
 type ManagementFeeCharged @entity(immutable: true) {
-  id: Bytes!
-  leverageToken: Bytes! # address
-  sharesFee: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Mint @entity(immutable: true) {
-  id: Bytes!
-  token: Bytes! # address
-  sender: Bytes! # address
-  actionData_collateral: BigInt! # uint256
-  actionData_debt: BigInt! # uint256
-  actionData_equity: BigInt! # uint256
-  actionData_shares: BigInt! # uint256
-  actionData_tokenFee: BigInt! # uint256
-  actionData_treasuryFee: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Rebalance @entity(immutable: true) {
-  id: Bytes!
-  token: Bytes! # address
-  sender: Bytes! # address
-  actions: [Bytes!]! # tuple[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Redeem @entity(immutable: true) {
-  id: Bytes!
-  token: Bytes! # address
-  sender: Bytes! # address
-  actionData_collateral: BigInt! # uint256
-  actionData_debt: BigInt! # uint256
-  actionData_equity: BigInt! # uint256
-  actionData_shares: BigInt! # uint256
-  actionData_tokenFee: BigInt! # uint256
-  actionData_treasuryFee: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+    id: Bytes!
+    leverageToken: Bytes! # address
+    sharesFee: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
 }
 
 # =========================================
@@ -214,31 +289,31 @@ type Redeem @entity(immutable: true) {
 # =========================================
 
 type AuctionCreated @entity(immutable: true) {
-  id: Bytes!
-  auction_isOverCollateralized: Boolean! # bool
-  auction_startTimestamp: BigInt! # uint120
-  auction_endTimestamp: BigInt! # uint120
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+    id: Bytes!
+    auction_isOverCollateralized: Boolean! # bool
+    auction_startTimestamp: BigInt! # uint120
+    auction_endTimestamp: BigInt! # uint120
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
 }
 
 type AuctionEnded @entity(immutable: true) {
-  id: Bytes!
+    id: Bytes!
 
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
 }
 
 type Take @entity(immutable: true) {
-  id: Bytes!
-  taker: Bytes! # address
-  amountIn: BigInt! # uint256
-  amountOut: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+    id: Bytes!
+    taker: Bytes! # address
+    amountIn: BigInt! # uint256
+    amountOut: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
 }
 
 # ===============================
@@ -246,16 +321,16 @@ type Take @entity(immutable: true) {
 # ===============================
 
 type Liquidate @entity(immutable: true) {
-  id: Bytes!
-  internal_id: Bytes! # bytes32
-  caller: Bytes! # address
-  borrower: Bytes! # address
-  repaidAssets: BigInt! # uint256
-  repaidShares: BigInt! # uint256
-  seizedAssets: BigInt! # uint256
-  badDebtAssets: BigInt! # uint256
-  badDebtShares: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+    id: Bytes!
+    internal_id: Bytes! # bytes32
+    caller: Bytes! # address
+    borrower: Bytes! # address
+    repaidAssets: BigInt! # uint256
+    repaidShares: BigInt! # uint256
+    seizedAssets: BigInt! # uint256
+    badDebtAssets: BigInt! # uint256
+    badDebtShares: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
 }

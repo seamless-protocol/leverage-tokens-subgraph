@@ -2,10 +2,7 @@ import {
   LendingAdapter,
   LeverageManager,
   LeverageToken,
-  ManagementFeeCharged,
-  Mint,
-  Rebalance,
-  Redeem,
+  ManagementFeeCharged
 } from "../generated/schema"
 import {
   DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
@@ -24,7 +21,7 @@ import {
   TreasurySet as TreasurySetEvent
 } from "../generated/LeverageManager/LeverageManager"
 import { MorphoLendingAdapter } from "../generated/templates/MorphoLendingAdapter/MorphoLendingAdapter"
-import { Address, BigDecimal, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 import { getLeverageManager, LendingAdapterType } from "./constants"
 
 export function handleDefaultManagementFeeAtCreationSet(
@@ -115,58 +112,12 @@ export function handleManagementFeeSet(event: ManagementFeeSetEvent): void {
 }
 
 export function handleMint(event: MintEvent): void {
-  let entity = new Mint(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.token = event.params.token
-  entity.sender = event.params.sender
-  entity.actionData_collateral = event.params.actionData.collateral
-  entity.actionData_debt = event.params.actionData.debt
-  entity.actionData_equity = event.params.actionData.equity
-  entity.actionData_shares = event.params.actionData.shares
-  entity.actionData_tokenFee = event.params.actionData.tokenFee
-  entity.actionData_treasuryFee = event.params.actionData.treasuryFee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleRebalance(event: RebalanceEvent): void {
-  let entity = new Rebalance(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.token = event.params.token
-  entity.sender = event.params.sender
-  entity.actions = changetype<Bytes[]>(event.params.actions)
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleRedeem(event: RedeemEvent): void {
-  let entity = new Redeem(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.token = event.params.token
-  entity.sender = event.params.sender
-  entity.actionData_collateral = event.params.actionData.collateral
-  entity.actionData_debt = event.params.actionData.debt
-  entity.actionData_equity = event.params.actionData.equity
-  entity.actionData_shares = event.params.actionData.shares
-  entity.actionData_tokenFee = event.params.actionData.tokenFee
-  entity.actionData_treasuryFee = event.params.actionData.treasuryFee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
