@@ -1,8 +1,7 @@
 import {
   LendingAdapter,
   LeverageManager,
-  LeverageToken,
-  ManagementFeeCharged
+  LeverageToken
 } from "../generated/schema"
 import {
   DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
@@ -95,17 +94,6 @@ export function handleLeverageTokenCreated(
 export function handleManagementFeeCharged(
   event: ManagementFeeChargedEvent
 ): void {
-  let entity = new ManagementFeeCharged(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.leverageToken = event.params.leverageToken
-  entity.sharesFee = event.params.sharesFee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleManagementFeeSet(event: ManagementFeeSetEvent): void {

@@ -17,9 +17,6 @@ import {
   Withdraw as WithdrawEvent,
   WithdrawCollateral as WithdrawCollateralEvent,
 } from "../generated/MorphoBlue/MorphoBlue"
-import {
-  Liquidate
-} from "../generated/schema"
 
 export function handleAccrueInterest(event: AccrueInterestEvent): void {
 }
@@ -43,23 +40,6 @@ export function handleIncrementNonce(event: IncrementNonceEvent): void {
 }
 
 export function handleLiquidate(event: LiquidateEvent): void {
-  let entity = new Liquidate(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.internal_id = event.params.id
-  entity.caller = event.params.caller
-  entity.borrower = event.params.borrower
-  entity.repaidAssets = event.params.repaidAssets
-  entity.repaidShares = event.params.repaidShares
-  entity.seizedAssets = event.params.seizedAssets
-  entity.badDebtAssets = event.params.badDebtAssets
-  entity.badDebtShares = event.params.badDebtShares
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleRepay(event: RepayEvent): void {

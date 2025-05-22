@@ -100,10 +100,7 @@ dataSources:
       kind: ethereum/events
       apiVersion: 0.0.9
       language: wasm/assemblyscript
-      entities:
-        - AuctionCreated
-        - AuctionEnded
-        - Take
+      entities: []
       abis:
         - name: RebalanceAdapter
           file: ./abis/RebalanceAdapter.json
