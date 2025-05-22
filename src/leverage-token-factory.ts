@@ -9,6 +9,8 @@ import {
 import { LeverageToken as LeverageTokenContract } from "../generated/templates/LeverageToken/LeverageToken"
 import { getLeverageManager, LendingAdapterType } from "./constants"
 
+const MAX_UINT256_STRING = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
 export function handleLeverageTokenCreated(event: BeaconProxyCreatedEvent): void {
   let lendingAdapter = LendingAdapter.load(Address.zero())
   if (!lendingAdapter) {
@@ -31,13 +33,24 @@ export function handleLeverageTokenCreated(event: BeaconProxyCreatedEvent): void
   leverageToken.leverageManager = leverageManager.id
   leverageToken.name = leverageTokenContract.name()
   leverageToken.symbol = leverageTokenContract.symbol()
+
+  leverageToken.createdTimestamp = event.block.timestamp
+  leverageToken.createdBlockNumber = event.block.number
+
+  // ==== Boilerplate values ====
+
   leverageToken.lendingAdapter = lendingAdapter.id
   leverageToken.rebalanceAdapter = Address.zero()
   leverageToken.managementFee = BigInt.zero()
+
   leverageToken.mintTreasuryActionFee = BigInt.zero()
   leverageToken.redeemTreasuryActionFee = BigInt.zero()
   leverageToken.mintTokenActionFee = BigInt.zero()
   leverageToken.redeemTokenActionFee = BigInt.zero()
+
+  // Default to max uint256, like the protocol does for an empty LeverageToken
+  leverageToken.collateralRatio = BigInt.fromString(MAX_UINT256_STRING);
+
   leverageToken.totalCollateral = BigInt.zero()
   leverageToken.totalCollateralUSD = BigDecimal.zero()
   leverageToken.totalDebt = BigInt.zero()
@@ -47,6 +60,7 @@ export function handleLeverageTokenCreated(event: BeaconProxyCreatedEvent): void
   leverageToken.totalEquityUSD = BigDecimal.zero()
   leverageToken.totalSupply = BigInt.zero()
   leverageToken.totalHolders = BigInt.zero()
+
   leverageToken.totalMintTokenActionFees = BigInt.zero()
   leverageToken.totalMintTokenActionFeesUSD = BigDecimal.zero()
   leverageToken.totalRedeemTokenActionFees = BigInt.zero()
@@ -57,7 +71,8 @@ export function handleLeverageTokenCreated(event: BeaconProxyCreatedEvent): void
   leverageToken.totalRedeemTreasuryFeesUSD = BigDecimal.zero()
   leverageToken.totalManagementFees = BigInt.zero()
   leverageToken.totalManagementFeesUSD = BigDecimal.zero()
-  leverageToken.createdTimestamp = event.block.timestamp
-  leverageToken.createdBlockNumber = event.block.number
+
+  // ==== End of boilerplate values ====
+
   leverageToken.save()
 }

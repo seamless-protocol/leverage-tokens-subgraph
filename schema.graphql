@@ -68,6 +68,9 @@ type LeverageToken @entity(immutable: false) {
 
     # ======== Leverage Position Balances ========
 
+    " Current collateral ratio of the LeverageToken "
+    collateralRatio: BigInt!
+
     " Current total collateral across all positions "
     totalCollateral: BigInt!
     " Current total collateral price in USD "
@@ -277,6 +280,8 @@ type EquityUpdate @entity(timeseries: true) {
     id: Int8!
     " The LeverageToken that the equity update is for "
     leverageToken: LeverageToken!
+    " The collateral ratio of the LeverageToken at the time of the update "
+    collateralRatio: BigInt!
     " The total equity amount in collateral after this update "
     totalEquityInCollateral: BigInt!
     " The total equity amount in debt after this update "
