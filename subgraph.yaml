@@ -144,23 +144,13 @@ dataSources:
           handler: handleEnableIrm
         - event: EnableLltv(uint256)
           handler: handleEnableLltv
-        - event: FlashLoan(indexed address,indexed address,uint256)
-          handler: handleFlashLoan
-        - event: IncrementNonce(indexed address,indexed address,uint256)
-          handler: handleIncrementNonce
         - event: Liquidate(indexed bytes32,indexed address,indexed
             address,uint256,uint256,uint256,uint256,uint256)
           handler: handleLiquidate
         - event: Repay(indexed bytes32,indexed address,indexed address,uint256,uint256)
           handler: handleRepay
-        - event: SetAuthorization(indexed address,indexed address,indexed address,bool)
-          handler: handleSetAuthorization
         - event: SetFee(indexed bytes32,uint256)
           handler: handleSetFee
-        - event: SetFeeRecipient(indexed address)
-          handler: handleSetFeeRecipient
-        - event: SetOwner(indexed address)
-          handler: handleSetOwner
         - event: Supply(indexed bytes32,indexed address,indexed address,uint256,uint256)
           handler: handleSupply
         - event: SupplyCollateral(indexed bytes32,indexed address,indexed address,uint256)
