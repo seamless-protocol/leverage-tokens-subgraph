@@ -11,10 +11,6 @@
     "MorphoBlue": {
       "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
       "startBlock": 30530939
-    },
-    "LeverageTokenFactory": {
-      "address": "0xeba55192c97CfBb5BE73Be94538b0CF9FA601CB0",
-      "startBlock": 30530939
     }
   }
 }

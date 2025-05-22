@@ -19,6 +19,12 @@ type LeverageManager @entity(immutable: false) {
     feeManagerRole: Bytes!
     " Treasury address of the LeverageManager "
     treasury: Bytes!
+    " Mint treasury action fee of the LeverageManager "
+    mintTreasuryActionFee: BigInt!
+    " Redeem treasury action fee of the LeverageManager "
+    redeemTreasuryActionFee: BigInt!
+    " Default management fee at creation of LeverageTokens "
+    defaultManagementFeeAtCreation: BigInt!
     " LeverageToken factory address of the LeverageManager "
     leverageTokenFactory: Bytes!
     " All LeverageTokens managed by this LeverageManager "
@@ -57,10 +63,6 @@ type LeverageToken @entity(immutable: false) {
 
     " Management fee for this LeverageToken "
     managementFee: BigInt!
-    " Mint treasury action fee for this LeverageToken "
-    mintTreasuryActionFee: BigInt!
-    " Redeem treasury action fee for this LeverageToken "
-    redeemTreasuryActionFee: BigInt!
     " Mint token action fee for this LeverageToken "
     mintTokenActionFee: BigInt!
     " Redeem token action fee for this LeverageToken "
