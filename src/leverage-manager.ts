@@ -23,7 +23,7 @@ import { LeverageToken as LeverageTokenContract } from "../generated/templates/L
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
-import { ExternalAction, LendingAdapterType, MAX_UINT256_STRING, ADDRESSES } from "./constants"
+import { ExternalAction, LendingAdapterType, MAX_UINT256_STRING } from "./constants"
 
 export function handleDefaultManagementFeeAtCreationSet(
   event: DefaultManagementFeeAtCreationSetEvent
@@ -33,7 +33,7 @@ export function handleDefaultManagementFeeAtCreationSet(
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
 ): void {
-  let leverageManager = getLeverageManager()
+  let leverageManager = LeverageManager.load(event.address)
   if (!leverageManager) {
     return
   }
@@ -51,7 +51,7 @@ export function handleLeverageTokenActionFeeSet(
 export function handleLeverageTokenCreated(
   event: LeverageTokenCreatedEvent
 ): void {
-  let leverageManager = getLeverageManager()
+  let leverageManager = LeverageManager.load(event.address)
   if (!leverageManager) {
     return
   }
@@ -135,7 +135,7 @@ export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
 }
 
 export function handleRoleGranted(event: RoleGrantedEvent): void {
-  let leverageManager = getLeverageManager()
+  let leverageManager = LeverageManager.load(event.address)
   if (!leverageManager) {
     // Handling the case where the LeverageManager is being initialized, this is the first event emitted that we need
     // to handle
@@ -159,7 +159,7 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
 export function handleTreasuryActionFeeSet(
   event: TreasuryActionFeeSetEvent
 ): void {
-  let leverageManager = getLeverageManager()
+  let leverageManager = LeverageManager.load(event.address)
   if (!leverageManager) {
     return
   }
@@ -174,17 +174,13 @@ export function handleTreasuryActionFeeSet(
 }
 
 export function handleTreasurySet(event: TreasurySetEvent): void {
-  let leverageManager = getLeverageManager()
+  let leverageManager = LeverageManager.load(event.address)
   if (!leverageManager) {
     return
   }
 
   leverageManager.treasury = event.params.treasury
   leverageManager.save()
-}
-
-export function getLeverageManager(): LeverageManager | null {
-  return LeverageManager.load(Address.fromString(ADDRESSES.LEVERAGE_MANAGER))
 }
 
 function getLeverageManagerStub(address: Address): LeverageManager {
