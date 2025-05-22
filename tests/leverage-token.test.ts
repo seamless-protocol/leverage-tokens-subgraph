@@ -7,9 +7,7 @@ import {
   afterAll
 } from "matchstick-as/assembly/index"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { Approval } from "../generated/schema"
 import { Approval as ApprovalEvent } from "../generated/LeverageToken/LeverageToken"
-import { handleApproval } from "../src/leverage-token"
 import { createApprovalEvent } from "./leverage-token-utils"
 
 // Tests structure (matchstick-as >=0.5.0)
@@ -22,8 +20,6 @@ describe("Describe entity assertions", () => {
       "0x0000000000000000000000000000000000000001"
     )
     let value = BigInt.fromI32(234)
-    let newApprovalEvent = createApprovalEvent(owner, spender, value)
-    handleApproval(newApprovalEvent)
   })
 
   afterAll(() => {

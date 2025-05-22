@@ -7,7 +7,6 @@ import {
   afterAll
 } from "matchstick-as/assembly/index"
 import { BigInt, Address, Bytes } from "@graphprotocol/graph-ts"
-import { DefaultManagementFeeAtCreationSet } from "../generated/schema"
 import { DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent } from "../generated/LeverageManager/LeverageManager"
 import { handleDefaultManagementFeeAtCreationSet } from "../src/leverage-manager"
 import { createDefaultManagementFeeAtCreationSetEvent } from "./leverage-manager-utils"

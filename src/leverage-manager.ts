@@ -1,18 +1,10 @@
 import {
-  DefaultManagementFeeAtCreationSet,
-  LeverageManagerInitialized,
-  LeverageTokenActionFeeSet,
-  LeverageTokenCreated,
+  LendingAdapter,
+  LeverageToken,
   ManagementFeeCharged,
-  ManagementFeeSet,
   Mint,
   Rebalance,
   Redeem,
-  RoleAdminChanged,
-  RoleGranted,
-  RoleRevoked,
-  TreasuryActionFeeSet,
-  TreasurySet
 } from "../generated/schema"
 import {
   DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
@@ -30,75 +22,56 @@ import {
   TreasuryActionFeeSet as TreasuryActionFeeSetEvent,
   TreasurySet as TreasurySetEvent
 } from "../generated/LeverageManager/LeverageManager"
-
+import { MorphoLendingAdapter } from "../generated/templates/MorphoLendingAdapter/MorphoLendingAdapter"
 import { Bytes } from "@graphprotocol/graph-ts"
+import { LendingAdapterType } from "./constants"
 
 export function handleDefaultManagementFeeAtCreationSet(
   event: DefaultManagementFeeAtCreationSetEvent
 ): void {
-  let entity = new DefaultManagementFeeAtCreationSet(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.fee = event.params.fee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
 ): void {
-  let entity = new LeverageManagerInitialized(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.leverageTokenFactory = event.params.leverageTokenFactory
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleLeverageTokenActionFeeSet(
   event: LeverageTokenActionFeeSetEvent
 ): void {
-  let entity = new LeverageTokenActionFeeSet(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.leverageToken = event.params.leverageToken
-  entity.action = event.params.action
-  entity.fee = event.params.fee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleLeverageTokenCreated(
   event: LeverageTokenCreatedEvent
 ): void {
-  let entity = new LeverageTokenCreated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.token = event.params.token
-  entity.collateralAsset = event.params.collateralAsset
-  entity.debtAsset = event.params.debtAsset
-  entity.config_lendingAdapter = event.params.config.lendingAdapter
-  entity.config_rebalanceAdapter = event.params.config.rebalanceAdapter
-  entity.config_mintTokenFee = event.params.config.mintTokenFee
-  entity.config_redeemTokenFee = event.params.config.redeemTokenFee
+  let leverageToken = LeverageToken.load(event.params.token)
+  if (leverageToken) {
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+    let lendingAdapter = LendingAdapter.load(event.params.config.lendingAdapter)
+    if (!lendingAdapter) {
+      lendingAdapter = new LendingAdapter(event.params.config.lendingAdapter)
+      // TODO: Determine the type of lending adapter by indexing lending adapters deployed from the morpho lending adapter factory,
+      // or by try / catch querying the market id on the lending adapter contract
+      lendingAdapter.type = LendingAdapterType.MORPHO
+      if (lendingAdapter.type === LendingAdapterType.MORPHO) {
+        const morphoLendingAdapter = MorphoLendingAdapter.bind(event.params.config.lendingAdapter)
 
-  entity.save()
+        const marketId = morphoLendingAdapter.morphoMarketId();
+        const marketParams = morphoLendingAdapter.marketParams();
+
+        lendingAdapter.morphoMarketId = marketId;
+        lendingAdapter.collateralAsset = marketParams.getCollateralToken();
+        lendingAdapter.debtAsset = marketParams.getLoanToken();
+      }
+
+      lendingAdapter.save()
+    }
+
+    leverageToken.lendingAdapter = lendingAdapter.id
+    leverageToken.rebalanceAdapter = event.params.config.rebalanceAdapter
+
+    leverageToken.save()
+  }
 }
 
 export function handleManagementFeeCharged(
@@ -118,17 +91,6 @@ export function handleManagementFeeCharged(
 }
 
 export function handleManagementFeeSet(event: ManagementFeeSetEvent): void {
-  let entity = new ManagementFeeSet(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.token = event.params.token
-  entity.fee = event.params.fee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleMint(event: MintEvent): void {
@@ -187,75 +149,18 @@ export function handleRedeem(event: RedeemEvent): void {
 }
 
 export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
-  let entity = new RoleAdminChanged(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.previousAdminRole = event.params.previousAdminRole
-  entity.newAdminRole = event.params.newAdminRole
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleRoleGranted(event: RoleGrantedEvent): void {
-  let entity = new RoleGranted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.account = event.params.account
-  entity.sender = event.params.sender
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleRoleRevoked(event: RoleRevokedEvent): void {
-  let entity = new RoleRevoked(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.account = event.params.account
-  entity.sender = event.params.sender
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleTreasuryActionFeeSet(
   event: TreasuryActionFeeSetEvent
 ): void {
-  let entity = new TreasuryActionFeeSet(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.action = event.params.action
-  entity.fee = event.params.fee
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleTreasurySet(event: TreasurySetEvent): void {
-  let entity = new TreasurySet(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.treasury = event.params.treasury
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }

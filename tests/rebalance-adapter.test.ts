@@ -6,7 +6,7 @@ import {
   beforeAll,
   afterAll
 } from "matchstick-as/assembly/index"
-import { BigInt, Address } from "@graphprotocol/graph-ts"
+import { BigInt, Address, ethereum } from "@graphprotocol/graph-ts"
 import { AuctionCreated } from "../generated/schema"
 import { AuctionCreated as AuctionCreatedEvent } from "../generated/RebalanceAdapter/RebalanceAdapter"
 import { handleAuctionCreated } from "../src/rebalance-adapter"
@@ -17,7 +17,7 @@ import { createAuctionCreatedEvent } from "./rebalance-adapter-utils"
 
 describe("Describe entity assertions", () => {
   beforeAll(() => {
-    let auction = "ethereum.Tuple Not implemented"
+    let auction = new ethereum.Tuple()
     let newAuctionCreatedEvent = createAuctionCreatedEvent(auction)
     handleAuctionCreated(newAuctionCreatedEvent)
   })
