@@ -44,16 +44,10 @@ type LeverageManagerAssetStats @entity(immutable: false) {
     leverageManager: LeverageManager!
     " Total collateral of this asset managed by all LeverageTokens managed by this LeverageManager "
     totalCollateral: BigInt!
-    " Total collateral price in USD of this asset managed by all LeverageTokens managed by this LeverageManager "
-    totalCollateralUSD: BigDecimal!
     " Total debt of this asset managed by all LeverageTokens managed by this LeverageManager "
     totalDebt: BigInt!
-    " Total debt price in USD of this asset managed by all LeverageTokens managed by this LeverageManager "
-    totalDebtUSD: BigDecimal!
     " Total equity in this asset managed by all LeverageTokens managed by this LeverageManager "
     totalEquity: BigInt!
-    " Total equity price in USD of this asset managed by all LeverageTokens managed by this LeverageManager "
-    totalEquityUSD: BigDecimal!
 }
 
 type LeverageToken @entity(immutable: false) {
@@ -88,19 +82,13 @@ type LeverageToken @entity(immutable: false) {
 
     " Current total collateral across all positions "
     totalCollateral: BigInt!
-    " Current total collateral price in USD "
-    totalCollateralUSD: BigDecimal!
     " Current total debt across all positions "
     totalDebt: BigInt!
-    " Current total debt price in USD "
-    totalDebtUSD: BigDecimal!
 
     " Current total equity in collateral asset "
     totalEquityInCollateral: BigInt!
     " Current total equity in debt asset "
     totalEquityInDebt: BigInt!
-    " Current total equity price in USD "
-    totalEquityUSD: BigDecimal!
 
     " Current total supply of the LeverageToken "
     totalSupply: BigInt!
@@ -111,24 +99,14 @@ type LeverageToken @entity(immutable: false) {
 
     " Total mint token action fees earned "
     totalMintTokenActionFees: BigInt!
-    " Total mint token action fees earned in USD "
-    totalMintTokenActionFeesUSD: BigDecimal!
     " Total redeem token action fees earned "
     totalRedeemTokenActionFees: BigInt!
-    " Total redeem token action fees earned in USD "
-    totalRedeemTokenActionFeesUSD: BigDecimal!
     " Total mint treasury fees earned in shares "
     totalMintTreasuryFees: BigInt!
-    " Total mint treasury fees earned in USD "
-    totalMintTreasuryFeesUSD: BigDecimal!
     " Total redeem treasury fees earned in shares "
     totalRedeemTreasuryFees: BigInt!
-    " Total redeem treasury fees earned in USD "
-    totalRedeemTreasuryFeesUSD: BigDecimal!
     " Total management fees earned in shares "
     totalManagementFees: BigInt!
-    " Total management fees earned in USD "
-    totalManagementFeesUSD: BigDecimal!
 
     # ======== Historical Data ========
 
@@ -186,12 +164,8 @@ type Mint @entity(timeseries: true) {
     amount: BigInt!
     " Collateral amount added to the position "
     collateralAmount: BigInt!
-    " Collateral amount added in USD at time of mint "
-    collateralAmountUSD: BigDecimal!
     " Debt amount added to the position "
     debtAmount: BigInt!
-    " Debt amount added in USD at time of mint "
-    debtAmountUSD: BigDecimal!
     " Token action fee for the mint "
     tokenActionFee: BigInt!
     " Treasury action fee for the mint "
@@ -213,12 +187,8 @@ type Redeem @entity(timeseries: true) {
     amount: BigInt!
     " Collateral amount removed from the position "
     collateralAmount: BigInt!
-    " Collateral amount removed in USD at time of redeem "
-    collateralAmountUSD: BigDecimal!
     " Debt amount removed from the position "
     debtAmount: BigInt!
-    " Debt amount removed in USD at time of redeem "
-    debtAmountUSD: BigDecimal!
     " Token action fee for the redeem "
     tokenActionFee: BigInt!
     " Treasury action fee for the redeem "
@@ -248,10 +218,6 @@ type Rebalance @entity(timeseries: true) {
     equityInCollateralAfter: BigInt!
     " Equity in debt asset of the LeverageToken after the rebalance "
     equityInDebtAfter: BigInt!
-    " Equity in USD before the rebalance "
-    equityUSDBefore: BigDecimal!
-    " Equity in USD after the rebalance "
-    equityUSDAfter: BigDecimal!
     " The timestamp of the rebalance "
     timestamp: Timestamp!
     " The block number of the rebalance "
@@ -264,8 +230,6 @@ type RebalanceAction @entity(immutable: true) {
     type: RebalanceActionType!
     " The amount of collateral or debt added or removed, depending on the action type "
     amount: BigInt!
-    " The amount of collateral or debt added or removed in USD at time of rebalance "
-    amountUSD: BigDecimal!
 }
 
 type CollateralUpdate @entity(timeseries: true) {
@@ -275,12 +239,8 @@ type CollateralUpdate @entity(timeseries: true) {
     leverageToken: LeverageToken!
     " The total collateral amount after this update "
     totalCollateral: BigInt!
-    " The total collateral amount in USD after this update "
-    totalCollateralUSD: BigDecimal!
     " The change in collateral amount "
     collateralChange: BigInt!
-    " The change in collateral amount in USD at time of collateral update "
-    collateralChangeUSD: BigDecimal!
     " Timestamp of the update "
     timestamp: Timestamp!
     " Block number of the update "
@@ -294,12 +254,8 @@ type DebtUpdate @entity(timeseries: true) {
     leverageToken: LeverageToken!
     " The total debt amount after this update "
     totalDebt: BigInt!
-    " The total debt amount in USD after this update "
-    totalDebtUSD: BigDecimal!
     " The change in debt amount "
     debtChange: BigInt!
-    " The change in debt amount in USD at time of debt update "
-    debtChangeUSD: BigDecimal!
     " Timestamp of the update "
     timestamp: Timestamp!
     " Block number of the update "
@@ -317,14 +273,10 @@ type EquityUpdate @entity(timeseries: true) {
     totalEquityInCollateral: BigInt!
     " The total equity amount in debt after this update "
     totalEquityInDebt: BigInt!
-    " The total equity amount in USD after this update "
-    totalEquityUSD: BigDecimal!
     " The change in equity amount in collateral "
     equityChangeInCollateral: BigInt!
     " The change in equity amount in debt "
     equityChangeInDebt: BigInt!
-    " The change in equity amount in USD at time of equity update "
-    equityChangeUSD: BigDecimal!
     " Timestamp of the update "
     timestamp: Timestamp!
     " Block number of the update "

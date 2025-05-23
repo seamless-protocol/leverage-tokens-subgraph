@@ -88,26 +88,18 @@ export function handleLeverageTokenCreated(
   leverageToken.collateralRatio = BigInt.fromString(MAX_UINT256_STRING);
 
   leverageToken.totalCollateral = BigInt.zero()
-  leverageToken.totalCollateralUSD = BigDecimal.zero()
   leverageToken.totalDebt = BigInt.zero()
-  leverageToken.totalDebtUSD = BigDecimal.zero()
   leverageToken.totalEquityInCollateral = BigInt.zero()
   leverageToken.totalEquityInDebt = BigInt.zero()
-  leverageToken.totalEquityUSD = BigDecimal.zero()
 
   leverageToken.totalSupply = BigInt.zero()
   leverageToken.totalHolders = BigInt.zero()
 
   leverageToken.totalMintTokenActionFees = BigInt.zero()
-  leverageToken.totalMintTokenActionFeesUSD = BigDecimal.zero()
   leverageToken.totalRedeemTokenActionFees = BigInt.zero()
-  leverageToken.totalRedeemTokenActionFeesUSD = BigDecimal.zero()
   leverageToken.totalMintTreasuryFees = BigInt.zero()
-  leverageToken.totalMintTreasuryFeesUSD = BigDecimal.zero()
   leverageToken.totalRedeemTreasuryFees = BigInt.zero()
-  leverageToken.totalRedeemTreasuryFeesUSD = BigDecimal.zero()
   leverageToken.totalManagementFees = BigInt.zero()
-  leverageToken.totalManagementFeesUSD = BigDecimal.zero()
 
   // ======== End of boilerplate values ========
 
@@ -232,11 +224,8 @@ function initLeverageManagerAssetStats(leverageManager: Address, asset: Address)
     leverageManagerAssetStats = new LeverageManagerAssetStats(asset)
     leverageManagerAssetStats.leverageManager = leverageManager
     leverageManagerAssetStats.totalCollateral = BigInt.zero()
-    leverageManagerAssetStats.totalCollateralUSD = BigDecimal.zero()
     leverageManagerAssetStats.totalDebt = BigInt.zero()
-    leverageManagerAssetStats.totalDebtUSD = BigDecimal.zero()
     leverageManagerAssetStats.totalEquity = BigInt.zero()
-    leverageManagerAssetStats.totalEquityUSD = BigDecimal.zero()
     leverageManagerAssetStats.save()
   }
   return leverageManagerAssetStats
