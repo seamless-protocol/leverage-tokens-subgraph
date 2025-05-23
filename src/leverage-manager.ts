@@ -235,6 +235,8 @@ function initLeverageManagerAssetStats(leverageManager: Address, asset: Address)
     leverageManagerAssetStats.totalCollateralUSD = BigDecimal.zero()
     leverageManagerAssetStats.totalDebt = BigInt.zero()
     leverageManagerAssetStats.totalDebtUSD = BigDecimal.zero()
+    leverageManagerAssetStats.totalEquity = BigInt.zero()
+    leverageManagerAssetStats.totalEquityUSD = BigDecimal.zero()
     leverageManagerAssetStats.save()
   }
   return leverageManagerAssetStats

@@ -50,6 +50,10 @@ type LeverageManagerAssetStats @entity(immutable: false) {
     totalDebt: BigInt!
     " Total debt price in USD of this asset managed by all LeverageTokens managed by this LeverageManager "
     totalDebtUSD: BigDecimal!
+    " Total equity in this asset managed by all LeverageTokens managed by this LeverageManager "
+    totalEquity: BigInt!
+    " Total equity price in USD of this asset managed by all LeverageTokens managed by this LeverageManager "
+    totalEquityUSD: BigDecimal!
 }
 
 type LeverageToken @entity(immutable: false) {
@@ -232,6 +236,22 @@ type Rebalance @entity(timeseries: true) {
     leverageToken: LeverageToken!
     " Rebalance actions "
     actions: [RebalanceAction!]!
+    " Collateral ratio before the rebalance "
+    collateralRatioBefore: BigInt!
+    " Collateral ratio after the rebalance "
+    collateralRatioAfter: BigInt!
+    " Equity in collateral asset of the LeverageToken before the rebalance "
+    equityInCollateralBefore: BigInt!
+    " Equity in debt asset of the LeverageToken before the rebalance "
+    equityInDebtBefore: BigInt!
+    " Equity in collateral asset of the LeverageToken after the rebalance "
+    equityInCollateralAfter: BigInt!
+    " Equity in debt asset of the LeverageToken after the rebalance "
+    equityInDebtAfter: BigInt!
+    " Equity in USD before the rebalance "
+    equityUSDBefore: BigDecimal!
+    " Equity in USD after the rebalance "
+    equityUSDAfter: BigDecimal!
     " The timestamp of the rebalance "
     timestamp: Timestamp!
     " The block number of the rebalance "
