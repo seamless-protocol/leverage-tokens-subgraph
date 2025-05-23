@@ -2,6 +2,7 @@ import {
   LendingAdapter,
   LeverageManager,
   LeverageToken,
+  LeverageManagerAssetStats
 } from "../generated/schema"
 import {
   DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
@@ -111,6 +112,9 @@ export function handleLeverageTokenCreated(
   // ======== End of boilerplate values ========
 
   leverageToken.save()
+
+  initLeverageManagerAssetStats(Address.fromBytes(leverageManager.id), Address.fromBytes(lendingAdapter.collateralAsset))
+  initLeverageManagerAssetStats(Address.fromBytes(leverageManager.id), Address.fromBytes(lendingAdapter.debtAsset))
 }
 
 export function handleManagementFeeCharged(
@@ -195,12 +199,7 @@ function getLeverageManagerStub(address: Address): LeverageManager {
   leverageManager.redeemTreasuryActionFee = BigInt.zero()
   leverageManager.defaultManagementFeeAtCreation = BigInt.zero()
 
-  leverageManager.totalCollateral = BigInt.zero()
-  leverageManager.totalCollateralUSD = BigDecimal.zero()
-  leverageManager.totalDebt = BigInt.zero()
-  leverageManager.totalDebtUSD = BigDecimal.zero()
   leverageManager.totalHolders = BigInt.zero()
-
   leverageManager.numLeverageTokens = BigInt.zero()
 
   return leverageManager
@@ -225,4 +224,18 @@ function initLendingAdapter(address: Address): LendingAdapter {
   lendingAdapter.save()
 
   return lendingAdapter
+}
+
+function initLeverageManagerAssetStats(leverageManager: Address, asset: Address): LeverageManagerAssetStats {
+  let leverageManagerAssetStats = LeverageManagerAssetStats.load(asset)
+  if (!leverageManagerAssetStats) {
+    leverageManagerAssetStats = new LeverageManagerAssetStats(asset)
+    leverageManagerAssetStats.leverageManager = leverageManager
+    leverageManagerAssetStats.totalCollateral = BigInt.zero()
+    leverageManagerAssetStats.totalCollateralUSD = BigDecimal.zero()
+    leverageManagerAssetStats.totalDebt = BigInt.zero()
+    leverageManagerAssetStats.totalDebtUSD = BigDecimal.zero()
+    leverageManagerAssetStats.save()
+  }
+  return leverageManagerAssetStats
 }

@@ -31,16 +31,25 @@ type LeverageManager @entity(immutable: false) {
     leverageTokens: [LeverageToken!]! @derivedFrom(field: "leverageManager")
     " Total number of LeverageTokens managed by this LeverageManager "
     numLeverageTokens: BigInt!
-    " Total collateral across all LeverageTokens managed by this LeverageManager "
-    totalCollateral: BigInt!
-    " Total collateral price in USD across all LeverageTokens managed by this LeverageManager "
-    totalCollateralUSD: BigDecimal!
-    " Total debt across all LeverageTokens managed by this LeverageManager "
-    totalDebt: BigInt!
-    " Total debt price in USD across all LeverageTokens managed by this LeverageManager "
-    totalDebtUSD: BigDecimal!
+    " Asset stats for all LeverageTokens managed by this LeverageManager "
+    assetStats: [LeverageManagerAssetStats!]! @derivedFrom(field: "leverageManager")
     " Total number of unique LeverageToken holders across all LeverageTokens managed by this LeverageManager "
     totalHolders: BigInt!
+}
+
+type LeverageManagerAssetStats @entity(immutable: false) {
+    " Address of the asset "
+    id: Bytes!
+    " Address of the LeverageManager "
+    leverageManager: LeverageManager!
+    " Total collateral of this asset managed by all LeverageTokens managed by this LeverageManager "
+    totalCollateral: BigInt!
+    " Total collateral price in USD of this asset managed by all LeverageTokens managed by this LeverageManager "
+    totalCollateralUSD: BigDecimal!
+    " Total debt of this asset managed by all LeverageTokens managed by this LeverageManager "
+    totalDebt: BigInt!
+    " Total debt price in USD of this asset managed by all LeverageTokens managed by this LeverageManager "
+    totalDebtUSD: BigDecimal!
 }
 
 type LeverageToken @entity(immutable: false) {
