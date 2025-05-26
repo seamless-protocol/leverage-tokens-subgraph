@@ -30,7 +30,7 @@ type LeverageManager @entity(immutable: false) {
     " All LeverageTokens managed by this LeverageManager "
     leverageTokens: [LeverageToken!]! @derivedFrom(field: "leverageManager")
     " Total number of LeverageTokens managed by this LeverageManager "
-    numLeverageTokens: BigInt!
+    leverageTokensCount: BigInt!
     " Asset stats for all LeverageTokens managed by this LeverageManager "
     assetStats: [LeverageManagerAssetStats!]! @derivedFrom(field: "leverageManager")
     " Total number of unique LeverageToken holders across all LeverageTokens managed by this LeverageManager "
@@ -82,8 +82,12 @@ type LeverageToken @entity(immutable: false) {
 
     " Current total collateral across all positions "
     totalCollateral: BigInt!
+    " Current total collateral in debt asset across all positions "
+    totalCollateralInDebt: BigInt!
     " Current total debt across all positions "
     totalDebt: BigInt!
+    " Current total debt in collateral asset across all positions "
+    totalDebtInCollateral: BigInt!
 
     " Current total equity in collateral asset "
     totalEquityInCollateral: BigInt!
@@ -149,23 +153,58 @@ type LendingAdapter @entity(immutable: true) {
 type User @entity(immutable: false) {
     " Address of the user "
     id: Bytes!
-    # " Historical positions that the user has had "
-    # positions: [Position!]! @derivedFrom(field: "user")
+    " Positions that the user has "
+    positions: [Position!]! @derivedFrom(field: "user")
+}
+
+type Position @entity(immutable: false) {
+    " { User address }-{ LT address } "
+    id: Bytes!
+    " Address of the user "
+    user: User!
+    " Address of the LeverageToken "
+    leverageToken: LeverageToken!
+    " Balance of the LeverageToken held by the user "
+    balance: BigInt!
+    " Collateral in the position "
+    collateral: BigInt!
+    " Collateral in debt asset of the position "
+    collateralInDebt: BigInt!
+    " Debt in the position "
+    debt: BigInt!
+    " Debt in collateral asset of the position "
+    debtInCollateral: BigInt!
+    " Equity in collateral asset of the position "
+    equityInCollateral: BigInt!
+    " Equity in debt asset of the position "
+    equityInDebt: BigInt!
+    " Historical mints "
+    mints: [Mint!]! @derivedFrom(field: "position")
+    " Historical redeems "
+    redeems: [Redeem!]! @derivedFrom(field: "position")
 }
 
 type Mint @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
+    " Position that the mint is for "
+    position: Position!
     " Address of the LeverageToken "
     leverageToken: LeverageToken!
-    " User who made the mint "
-    user: User!
     " Amount of LeverageToken minted "
     amount: BigInt!
     " Collateral amount added to the position "
-    collateralAmount: BigInt!
+    collateral: BigInt!
+    " Collateral amount added to the position in debt asset "
+    collateralInDebt: BigInt!
     " Debt amount added to the position "
-    debtAmount: BigInt!
+    debt: BigInt!
+    " Debt amount added to the position in collateral asset "
+    debtInCollateral: BigInt!
+    " Equity amount added to the position in collateral asset "
+    equityInCollateral: BigInt!
+    " Equity amount added to the position in debt asset "
+    equityInDebt: BigInt!
     " Token action fee for the mint "
     tokenActionFee: BigInt!
     " Treasury action fee for the mint "
@@ -179,16 +218,24 @@ type Mint @entity(timeseries: true) {
 type Redeem @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
+    " Position that the redeem is for "
+    position: Position!
     " Address of the LeverageToken "
     leverageToken: LeverageToken!
-    " User that made the redeem "
-    user: User!
     " Amount of LeverageToken redeemed "
     amount: BigInt!
     " Collateral amount removed from the position "
-    collateralAmount: BigInt!
+    collateral: BigInt!
+    " Collateral amount removed from the position in debt asset "
+    collateralInDebt: BigInt!
     " Debt amount removed from the position "
-    debtAmount: BigInt!
+    debt: BigInt!
+    " Debt amount removed from the position in collateral asset "
+    debtInCollateral: BigInt!
+    " Equity amount removed from the position in collateral asset "
+    equityInCollateral: BigInt!
+    " Equity amount removed from the position in debt asset "
+    equityInDebt: BigInt!
     " Token action fee for the redeem "
     tokenActionFee: BigInt!
     " Treasury action fee for the redeem "

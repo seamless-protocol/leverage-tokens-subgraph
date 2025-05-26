@@ -23,7 +23,7 @@ import {
 import { LeverageToken as LeverageTokenContract } from "../generated/templates/LeverageToken/LeverageToken"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
-import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { ExternalAction, LendingAdapterType, MAX_UINT256_STRING } from "./constants"
 
 export function handleDefaultManagementFeeAtCreationSet(
@@ -57,7 +57,7 @@ export function handleLeverageTokenCreated(
     return
   }
 
-  leverageManager.numLeverageTokens = leverageManager.numLeverageTokens.plus(BigInt.fromI32(1))
+  leverageManager.leverageTokensCount = leverageManager.leverageTokensCount.plus(BigInt.fromI32(1))
   leverageManager.save()
 
   let lendingAdapter = LendingAdapter.load(event.params.config.lendingAdapter)
@@ -88,7 +88,9 @@ export function handleLeverageTokenCreated(
   leverageToken.collateralRatio = BigInt.fromString(MAX_UINT256_STRING);
 
   leverageToken.totalCollateral = BigInt.zero()
+  leverageToken.totalCollateralInDebt = BigInt.zero()
   leverageToken.totalDebt = BigInt.zero()
+  leverageToken.totalDebtInCollateral = BigInt.zero()
   leverageToken.totalEquityInCollateral = BigInt.zero()
   leverageToken.totalEquityInDebt = BigInt.zero()
 
@@ -192,7 +194,7 @@ function getLeverageManagerStub(address: Address): LeverageManager {
   leverageManager.defaultManagementFeeAtCreation = BigInt.zero()
 
   leverageManager.totalHolders = BigInt.zero()
-  leverageManager.numLeverageTokens = BigInt.zero()
+  leverageManager.leverageTokensCount = BigInt.zero()
 
   return leverageManager
 }
