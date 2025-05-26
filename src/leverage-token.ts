@@ -1,5 +1,5 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { LeverageManager, LeverageToken, Position, User } from "../generated/schema"
+import { LeverageManager, LeverageToken, Position, PositionEquityUpdate, User } from "../generated/schema"
 import {
   Transfer as TransferEvent,
 } from "../generated/templates/LeverageToken/LeverageToken"
@@ -36,6 +36,8 @@ export function handleTransfer(event: TransferEvent): void {
       leverageToken.totalHolders = leverageToken.totalHolders.minus(BigInt.fromI32(1))
       leverageManager.totalHolders = leverageManager.totalHolders.minus(BigInt.fromI32(1))
     }
+
+    // TODO: Add a position equity update for from user (decrease)
   }
 
   if (event.params.to.notEqual(Address.zero())) {
@@ -58,6 +60,8 @@ export function handleTransfer(event: TransferEvent): void {
 
     toPosition.balance = toPosition.balance.plus(event.params.value)
     toPosition.save()
+
+    // TODO: Add a position equity update for to user (increase)
   }
 
   leverageToken.save()
