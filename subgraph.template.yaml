@@ -16,8 +16,7 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - CollateralUpdate
-        - DebtUpdate
+        - EquityUpdate
         - LendingAdapter
         - LeverageManager
         - LeverageToken
@@ -50,7 +49,7 @@ dataSources:
         - event: Mint(indexed address,indexed
             address,(uint256,uint256,uint256,uint256,uint256,uint256))
           handler: handleMint
-        - event: Rebalance(indexed address,indexed address,(uint8,uint256)[])
+        - event: Rebalance(indexed address,indexed address,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256),(uint8,uint256)[])
           handler: handleRebalance
         - event: Redeem(indexed address,indexed
             address,(uint256,uint256,uint256,uint256,uint256,uint256))
