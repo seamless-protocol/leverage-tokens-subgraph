@@ -1,21 +1,21 @@
 {
   "name": "leverage-tokens-subgraph",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
+    "generate-manifest": "mustache ./networks.json ./subgraph.template.yaml > ./subgraph.yaml",
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ leverage-tokens-subgraph",
     "create-local": "graph create --node http://localhost:8020/ leverage-tokens-subgraph",
     "remove-local": "graph remove --node http://localhost:8020/ leverage-tokens-subgraph",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 leverage-tokens-subgraph",
-    "test": "graph test"
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 leverage-tokens-subgraph"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.97.0",
     "@graphprotocol/graph-ts": "0.37.0"
   },
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447",
   "devDependencies": {
-    "matchstick-as": "0.6.0"
-  },
-  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+    "mustache": "^4.2.0"
+  }
 }

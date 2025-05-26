@@ -8,38 +8,34 @@ dataSources:
     name: LeverageManager
     network: base
     source:
-      address: "0x7F2Fa32C991fD2F8dF3EB23C394f550376e9b30d"
+      address: "{{base.LeverageManager.address}}"
       abi: LeverageManager
-      startBlock: 30530940
+      startBlock: {{base.LeverageManager.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - DefaultManagementFeeAtCreationSet
-        - Initialized
-        - LeverageManagerInitialized
-        - LeverageTokenActionFeeSet
-        - LeverageTokenCreated
-        - ManagementFeeCharged
-        - ManagementFeeSet
+        - CollateralUpdate
+        - DebtUpdate
+        - LendingAdapter
+        - LeverageManager
+        - LeverageToken
         - Mint
         - Rebalance
+        - RebalanceAction
         - Redeem
-        - RoleAdminChanged
-        - RoleGranted
-        - RoleRevoked
-        - TreasuryActionFeeSet
-        - TreasurySet
-        - Upgraded
+        - User
       abis:
         - name: LeverageManager
           file: ./abis/LeverageManager.json
+        - name: LeverageToken
+          file: ./abis/LeverageToken.json
+        - name: MorphoLendingAdapter
+          file: ./abis/MorphoLendingAdapter.json
       eventHandlers:
         - event: DefaultManagementFeeAtCreationSet(uint256)
           handler: handleDefaultManagementFeeAtCreationSet
-        - event: Initialized(uint64)
-          handler: handleInitialized
         - event: LeverageManagerInitialized(address)
           handler: handleLeverageManagerInitialized
         - event: LeverageTokenActionFeeSet(indexed address,indexed uint8,uint256)
@@ -69,61 +65,19 @@ dataSources:
           handler: handleTreasuryActionFeeSet
         - event: TreasurySet(address)
           handler: handleTreasurySet
-        - event: Upgraded(indexed address)
-          handler: handleUpgraded
       file: ./src/leverage-manager.ts
-  - kind: ethereum
-    name: LeverageToken
-    network: base
-    source:
-      address: "0x15aD877B54859511Ff8f4d239347E93dFf8BBc25"
-      abi: LeverageToken
-      startBlock: 30530940
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.9
-      language: wasm/assemblyscript
-      entities:
-        - Approval
-        - EIP712DomainChanged
-        - LeverageTokenInitialized
-        - OwnershipTransferred
-        - Transfer
-      abis:
-        - name: LeverageToken
-          file: ./abis/LeverageToken.json
-      eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
-        - event: EIP712DomainChanged()
-          handler: handleEIP712DomainChanged
-        - event: LeverageTokenInitialized(string,string)
-          handler: handleLeverageTokenInitialized
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
-      file: ./src/leverage-token.ts
   - kind: ethereum
     name: RebalanceAdapter
     network: base
     source:
-      address: "0x37767d8102966577A4f5c7930e0657C592E5061b"
+      address: "{{base.RebalanceAdapter.address}}"
       abi: RebalanceAdapter
-      startBlock: 30530940
+      startBlock: {{base.RebalanceAdapter.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
       language: wasm/assemblyscript
-      entities:
-        - AuctionCreated
-        - AuctionEnded
-        - CollateralRatiosRebalanceAdapterInitialized
-        - DutchAuctionRebalanceAdapterInitialized
-        - LeverageTokenSet
-        - PreLiquidationRebalanceAdapterInitialized
-        - RebalanceAdapterInitialized
-        - Take
+      entities: []
       abis:
         - name: RebalanceAdapter
           file: ./abis/RebalanceAdapter.json
@@ -149,31 +103,14 @@ dataSources:
     name: MorphoBlue
     network: base
     source:
-      address: "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCc"
+      address: "{{base.MorphoBlue.address}}"
       abi: MorphoBlue
-      startBlock: 30530940
+      startBlock: {{base.MorphoBlue.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
       language: wasm/assemblyscript
-      entities:
-        - AccrueInterest
-        - Borrow
-        - CreateMarket
-        - EnableIrm
-        - EnableLltv
-        - FlashLoan
-        - IncrementNonce
-        - Liquidate
-        - Repay
-        - SetAuthorization
-        - SetFee
-        - SetFeeRecipient
-        - SetOwner
-        - Supply
-        - SupplyCollateral
-        - Withdraw
-        - WithdrawCollateral
+      entities: []
       abis:
         - name: MorphoBlue
           file: ./abis/MorphoBlue.json
@@ -188,23 +125,13 @@ dataSources:
           handler: handleEnableIrm
         - event: EnableLltv(uint256)
           handler: handleEnableLltv
-        - event: FlashLoan(indexed address,indexed address,uint256)
-          handler: handleFlashLoan
-        - event: IncrementNonce(indexed address,indexed address,uint256)
-          handler: handleIncrementNonce
         - event: Liquidate(indexed bytes32,indexed address,indexed
             address,uint256,uint256,uint256,uint256,uint256)
           handler: handleLiquidate
         - event: Repay(indexed bytes32,indexed address,indexed address,uint256,uint256)
           handler: handleRepay
-        - event: SetAuthorization(indexed address,indexed address,indexed address,bool)
-          handler: handleSetAuthorization
         - event: SetFee(indexed bytes32,uint256)
           handler: handleSetFee
-        - event: SetFeeRecipient(indexed address)
-          handler: handleSetFeeRecipient
-        - event: SetOwner(indexed address)
-          handler: handleSetOwner
         - event: Supply(indexed bytes32,indexed address,indexed address,uint256,uint256)
           handler: handleSupply
         - event: SupplyCollateral(indexed bytes32,indexed address,indexed address,uint256)
@@ -214,3 +141,25 @@ dataSources:
         - event: WithdrawCollateral(indexed bytes32,address,indexed address,indexed address,uint256)
           handler: handleWithdrawCollateral
       file: ./src/morpho-blue.ts
+
+templates:
+  - name: LeverageToken
+    kind: ethereum/contract
+    network: base
+    source:
+      abi: LeverageToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - LeverageToken
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: LeverageToken
+          file: ./abis/LeverageToken.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/leverage-token.ts
