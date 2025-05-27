@@ -3,15 +3,6 @@ import { LeverageManager, Position } from "../../generated/schema";
 
 export function getLeverageManagerStub(address: Address): LeverageManager {
     let leverageManager = new LeverageManager(address);
-    leverageManager.admin = Address.zero();
-    leverageManager.feeManagerRole = Address.zero();
-    leverageManager.treasury = Address.zero();
-
-    leverageManager.leverageTokenFactory = Address.zero();
-
-    leverageManager.mintTreasuryActionFee = BigInt.zero();
-    leverageManager.redeemTreasuryActionFee = BigInt.zero();
-    leverageManager.defaultManagementFeeAtCreation = BigInt.zero();
 
     leverageManager.totalHolders = BigInt.zero();
     leverageManager.leverageTokensCount = BigInt.zero();

@@ -7,54 +7,39 @@ import {
   Mint,
   EquityUpdate,
   PositionEquityUpdate,
-  Redeem
+  Redeem,
+  Oracle,
+  MorphoChainlinkOracleData,
+  ChainlinkAggregator,
+  ChainlinkAggregatorPriceUpdate
 } from "../generated/schema"
 import {
-  DefaultManagementFeeAtCreationSet as DefaultManagementFeeAtCreationSetEvent,
   LeverageManagerInitialized as LeverageManagerInitializedEvent,
-  LeverageTokenActionFeeSet as LeverageTokenActionFeeSetEvent,
   LeverageTokenCreated as LeverageTokenCreatedEvent,
   ManagementFeeCharged as ManagementFeeChargedEvent,
-  ManagementFeeSet as ManagementFeeSetEvent,
   Mint as MintEvent,
   Rebalance as RebalanceEvent,
-  Redeem as RedeemEvent,
-  RoleAdminChanged as RoleAdminChangedEvent,
-  RoleGranted as RoleGrantedEvent,
-  RoleRevoked as RoleRevokedEvent,
-  TreasuryActionFeeSet as TreasuryActionFeeSetEvent,
-  TreasurySet as TreasurySetEvent
+  Redeem as RedeemEvent
 } from "../generated/LeverageManager/LeverageManager"
+import { ChainlinkAggregator as ChainlinkAggregatorContract } from "../generated/LeverageManager/ChainlinkAggregator"
+import { ChainlinkEACAggregatorProxy as ChainlinkEACAggregatorProxyContract } from "../generated/LeverageManager/ChainlinkEACAggregatorProxy"
 import { LeverageToken as LeverageTokenTemplate } from "../generated/templates"
-import { LeverageToken as LeverageTokenContract } from "../generated/templates/LeverageToken/LeverageToken"
-import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
+import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/LeverageManager/MorphoChainlinkOracleV2"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { ExternalAction, LendingAdapterType, MAX_UINT256_STRING } from "./constants"
+import { LendingAdapterType, MAX_UINT256_STRING, OracleType } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { getPosition, calculateCollateralRatio } from "./utils"
-
-export function handleDefaultManagementFeeAtCreationSet(
-  event: DefaultManagementFeeAtCreationSetEvent
-): void {
-}
 
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
 ): void {
   let leverageManager = LeverageManager.load(event.address)
   if (!leverageManager) {
-    return
+    leverageManager = getLeverageManagerStub(event.address)
   }
 
-  leverageManager.leverageTokenFactory = event.params.leverageTokenFactory
-
   leverageManager.save()
-}
-
-export function handleLeverageTokenActionFeeSet(
-  event: LeverageTokenActionFeeSetEvent
-): void {
 }
 
 export function handleLeverageTokenCreated(
@@ -70,26 +55,19 @@ export function handleLeverageTokenCreated(
 
   let lendingAdapter = LendingAdapter.load(event.params.config.lendingAdapter)
   if (!lendingAdapter) {
-    lendingAdapter = initLendingAdapter(event.params.config.lendingAdapter)
+    lendingAdapter = initLendingAdapter(event)
   }
 
   LeverageTokenTemplate.create(event.params.token)
   const leverageToken = new LeverageToken(event.params.token)
-  const leverageTokenContract = LeverageTokenContract.bind(event.params.token)
 
   leverageToken.leverageManager = leverageManager.id
-  leverageToken.name = leverageTokenContract.name()
-  leverageToken.symbol = leverageTokenContract.symbol()
 
   leverageToken.createdTimestamp = event.block.timestamp
   leverageToken.createdBlockNumber = event.block.number
 
   leverageToken.lendingAdapter = lendingAdapter.id
   leverageToken.rebalanceAdapter = event.params.config.rebalanceAdapter
-
-  leverageToken.managementFee = leverageManager.defaultManagementFeeAtCreation
-  leverageToken.mintTokenActionFee = event.params.config.mintTokenFee
-  leverageToken.redeemTokenActionFee = event.params.config.redeemTokenFee
 
   // ======== Boilerplate values ========
 
@@ -125,9 +103,6 @@ export function handleManagementFeeCharged(
 ): void {
 }
 
-export function handleManagementFeeSet(event: ManagementFeeSetEvent): void {
-}
-
 // TODO: Add pricing in both assets when oracle indexing is implemented
 export function handleMint(event: MintEvent): void {
   const leverageManager = LeverageManager.load(event.address)
@@ -150,11 +125,6 @@ export function handleMint(event: MintEvent): void {
     return
   }
 
-  const leverageManagerDebtAssetStats = LeverageManagerAssetStats.load(lendingAdapter.debtAsset)
-  if (!leverageManagerDebtAssetStats) {
-    return
-  }
-
   const user = User.load(event.params.sender)
   if (!user) {
     return
@@ -170,10 +140,6 @@ export function handleMint(event: MintEvent): void {
   mint.position = position.id
   mint.leverageToken = leverageToken.id
   mint.amount = event.params.actionData.shares
-  mint.collateral = event.params.actionData.collateral
-  mint.collateralInDebt = BigInt.zero()
-  mint.debt = event.params.actionData.debt
-  mint.debtInCollateral = BigInt.zero()
   mint.equityInCollateral = event.params.actionData.equity
   mint.equityInDebt = BigInt.zero()
   mint.tokenActionFee = event.params.actionData.tokenFee
@@ -186,9 +152,9 @@ export function handleMint(event: MintEvent): void {
   position.equityInDebt = BigInt.zero()
   position.save()
 
-  leverageToken.totalCollateral = leverageToken.totalCollateral.plus(mint.collateral)
+  leverageToken.totalCollateral = leverageToken.totalCollateral.plus(event.params.actionData.collateral)
   leverageToken.totalCollateralInDebt = BigInt.zero()
-  leverageToken.totalDebt = leverageToken.totalDebt.plus(mint.debt)
+  leverageToken.totalDebt = leverageToken.totalDebt.plus(event.params.actionData.debt)
   leverageToken.totalDebtInCollateral = BigInt.zero()
   leverageToken.totalEquityInCollateral = leverageToken.totalEquityInCollateral.plus(mint.equityInCollateral)
   leverageToken.totalEquityInDebt = BigInt.zero()
@@ -209,10 +175,6 @@ export function handleMint(event: MintEvent): void {
   // The id for timeseries is autogenerated; even if we set it to a real value, it is silently overwritten
   const leverageTokenEquityUpdate = new EquityUpdate(0)
   leverageTokenEquityUpdate.leverageToken = leverageToken.id
-  leverageTokenEquityUpdate.totalCollateral = leverageToken.totalCollateral
-  leverageTokenEquityUpdate.totalCollateralInDebt = leverageToken.totalCollateralInDebt
-  leverageTokenEquityUpdate.totalDebt = leverageToken.totalDebt
-  leverageTokenEquityUpdate.totalDebtInCollateral = leverageToken.totalDebtInCollateral
   leverageTokenEquityUpdate.totalEquityInCollateral = leverageToken.totalEquityInCollateral
   leverageTokenEquityUpdate.totalEquityInDebt = leverageToken.totalEquityInDebt
   leverageTokenEquityUpdate.collateralRatio = leverageToken.collateralRatio
@@ -220,11 +182,8 @@ export function handleMint(event: MintEvent): void {
   leverageTokenEquityUpdate.blockNumber = event.block.number
   leverageTokenEquityUpdate.save()
 
-  leverageManagerCollateralAssetStats.totalCollateral = leverageManagerCollateralAssetStats.totalCollateral.plus(mint.collateral)
+  leverageManagerCollateralAssetStats.totalCollateral = leverageManagerCollateralAssetStats.totalCollateral.plus(event.params.actionData.collateral)
   leverageManagerCollateralAssetStats.save()
-
-  leverageManagerDebtAssetStats.totalDebt = leverageManagerDebtAssetStats.totalDebt.plus(mint.debt)
-  leverageManagerDebtAssetStats.save()
 }
 
 export function handleRebalance(event: RebalanceEvent): void {
@@ -252,11 +211,6 @@ export function handleRedeem(event: RedeemEvent): void {
     return
   }
 
-  const leverageManagerDebtAssetStats = LeverageManagerAssetStats.load(lendingAdapter.debtAsset)
-  if (!leverageManagerDebtAssetStats) {
-    return
-  }
-
   const user = User.load(event.params.sender)
   if (!user) {
     return
@@ -272,10 +226,6 @@ export function handleRedeem(event: RedeemEvent): void {
   redeem.position = position.id
   redeem.leverageToken = leverageToken.id
   redeem.amount = event.params.actionData.shares
-  redeem.collateral = event.params.actionData.collateral
-  redeem.collateralInDebt = BigInt.zero()
-  redeem.debt = event.params.actionData.debt
-  redeem.debtInCollateral = BigInt.zero()
   redeem.equityInCollateral = event.params.actionData.equity
   redeem.equityInDebt = BigInt.zero()
   redeem.tokenActionFee = event.params.actionData.tokenFee
@@ -284,9 +234,9 @@ export function handleRedeem(event: RedeemEvent): void {
   redeem.blockNumber = event.block.number
   redeem.save()
 
-  leverageToken.totalCollateral = leverageToken.totalCollateral.minus(redeem.collateral)
+  leverageToken.totalCollateral = leverageToken.totalCollateral.minus(event.params.actionData.collateral)
   leverageToken.totalCollateralInDebt = BigInt.zero()
-  leverageToken.totalDebt = leverageToken.totalDebt.minus(redeem.debt)
+  leverageToken.totalDebt = leverageToken.totalDebt.minus(event.params.actionData.debt)
   leverageToken.totalDebtInCollateral = BigInt.zero()
   leverageToken.totalEquityInCollateral = leverageToken.totalEquityInCollateral.minus(redeem.equityInCollateral)
   leverageToken.totalEquityInDebt = BigInt.zero()
@@ -311,10 +261,6 @@ export function handleRedeem(event: RedeemEvent): void {
   // The id for timeseries is autogenerated; even if we set it to a real value, it is silently overwritten
   const leverageTokenEquityUpdate = new EquityUpdate(0)
   leverageTokenEquityUpdate.leverageToken = leverageToken.id
-  leverageTokenEquityUpdate.totalCollateral = leverageToken.totalCollateral
-  leverageTokenEquityUpdate.totalCollateralInDebt = leverageToken.totalCollateralInDebt
-  leverageTokenEquityUpdate.totalDebt = leverageToken.totalDebt
-  leverageTokenEquityUpdate.totalDebtInCollateral = leverageToken.totalDebtInCollateral
   leverageTokenEquityUpdate.totalEquityInCollateral = leverageToken.totalEquityInCollateral
   leverageTokenEquityUpdate.totalEquityInDebt = leverageToken.totalEquityInDebt
   leverageTokenEquityUpdate.collateralRatio = leverageToken.collateralRatio
@@ -322,80 +268,93 @@ export function handleRedeem(event: RedeemEvent): void {
   leverageTokenEquityUpdate.blockNumber = event.block.number
   leverageTokenEquityUpdate.save()
 
-  leverageManagerCollateralAssetStats.totalCollateral = leverageManagerCollateralAssetStats.totalCollateral.minus(redeem.collateral)
+  leverageManagerCollateralAssetStats.totalCollateral = leverageManagerCollateralAssetStats.totalCollateral.minus(event.params.actionData.collateral)
   leverageManagerCollateralAssetStats.save()
-
-  leverageManagerDebtAssetStats.totalDebt = leverageManagerDebtAssetStats.totalDebt.minus(redeem.debt)
-  leverageManagerDebtAssetStats.save()
 }
 
-export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
+function initLendingAdapter(event: LeverageTokenCreatedEvent): LendingAdapter {
+  const lendingAdapterAddress = event.params.config.lendingAdapter
 
-}
+  let lendingAdapter = new LendingAdapter(lendingAdapterAddress)
 
-export function handleRoleGranted(event: RoleGrantedEvent): void {
-  let leverageManager = LeverageManager.load(event.address)
-  if (!leverageManager) {
-    // Handling the case where the LeverageManager is being initialized, this is the first event emitted that we need
-    // to handle
-    leverageManager = getLeverageManagerStub(event.address)
-  }
-
-  let leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageManager.id))
-
-  if (event.params.role.equals(leverageManagerContract.DEFAULT_ADMIN_ROLE())) {
-    leverageManager.admin = event.params.account
-  } else if (event.params.role.equals(leverageManagerContract.FEE_MANAGER_ROLE())) {
-    leverageManager.feeManagerRole = event.params.account
-  }
-
-  leverageManager.save()
-}
-
-export function handleRoleRevoked(event: RoleRevokedEvent): void {
-}
-
-export function handleTreasuryActionFeeSet(
-  event: TreasuryActionFeeSetEvent
-): void {
-  let leverageManager = LeverageManager.load(event.address)
-  if (!leverageManager) {
-    return
-  }
-
-  if (event.params.action === ExternalAction.MINT) {
-    leverageManager.mintTreasuryActionFee = event.params.fee
-  } else if (event.params.action === ExternalAction.REDEEM) {
-    leverageManager.redeemTreasuryActionFee = event.params.fee
-  }
-
-  leverageManager.save()
-}
-
-export function handleTreasurySet(event: TreasurySetEvent): void {
-  let leverageManager = LeverageManager.load(event.address)
-  if (!leverageManager) {
-    return
-  }
-
-  leverageManager.treasury = event.params.treasury
-  leverageManager.save()
-}
-
-function initLendingAdapter(address: Address): LendingAdapter {
-  let lendingAdapter = new LendingAdapter(address)
   // TODO: Determine the type of lending adapter by indexing lending adapters deployed from the morpho lending adapter factory,
   // or by try / catch querying the market id on the lending adapter contract
   lendingAdapter.type = LendingAdapterType.MORPHO
   if (lendingAdapter.type === LendingAdapterType.MORPHO) {
-    const morphoLendingAdapter = MorphoLendingAdapterContract.bind(address)
+    const morphoLendingAdapter = MorphoLendingAdapterContract.bind(lendingAdapterAddress)
 
-    const marketId = morphoLendingAdapter.morphoMarketId();
-    const marketParams = morphoLendingAdapter.marketParams();
+    const marketId = morphoLendingAdapter.morphoMarketId()
+    const marketParams = morphoLendingAdapter.marketParams()
 
     lendingAdapter.morphoMarketId = marketId;
-    lendingAdapter.collateralAsset = marketParams.getCollateralToken();
-    lendingAdapter.debtAsset = marketParams.getLoanToken();
+    lendingAdapter.collateralAsset = marketParams.getCollateralToken()
+    lendingAdapter.debtAsset = marketParams.getLoanToken()
+
+    const oracleAddress = marketParams.getOracle();
+    let oracle = Oracle.load(oracleAddress);
+    if (!oracle) {
+      const morphoChainlinkOracleContract = MorphoChainlinkOracleV2Contract.bind(oracleAddress);
+
+      oracle = new Oracle(oracleAddress);
+      oracle.type = OracleType.MORPHO_CHAINLINK
+      oracle.price = morphoChainlinkOracleContract.price()
+      oracle.timestamp = event.block.timestamp.toI64()
+      oracle.blockNumber = event.block.number
+      oracle.save()
+
+      let morphoChainlinkOracleData = MorphoChainlinkOracleData.load(oracleAddress)
+      if (!morphoChainlinkOracleData) {
+        morphoChainlinkOracleData = new MorphoChainlinkOracleData(oracleAddress)
+        morphoChainlinkOracleData.oracle = oracle.id
+      }
+
+      // Only BASE_FEED_1 must be defined, the other feeds are optional
+      const baseFeedA = ChainlinkEACAggregatorProxyContract.bind(morphoChainlinkOracleContract.BASE_FEED_1())
+      const baseFeedBAddress = morphoChainlinkOracleContract.BASE_FEED_2()
+      const quoteFeedAAddress = morphoChainlinkOracleContract.QUOTE_FEED_1()
+      const quoteFeedBAddress = morphoChainlinkOracleContract.QUOTE_FEED_2()
+
+      const aggregatorContracts = [
+        ChainlinkAggregatorContract.bind(baseFeedA.aggregator()),
+        baseFeedBAddress.notEqual(Address.zero()) ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(baseFeedBAddress).aggregator()) : null,
+        quoteFeedAAddress.notEqual(Address.zero()) ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(quoteFeedAAddress).aggregator()) : null,
+        quoteFeedBAddress.notEqual(Address.zero()) ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(quoteFeedBAddress).aggregator()) : null
+      ]
+
+      for (let i = 0; i < aggregatorContracts.length; i++) {
+        const aggregatorContract = aggregatorContracts[i]
+        if (aggregatorContract === null) {
+          continue
+        }
+
+        const latestRoundData = aggregatorContract.latestRoundData()
+
+        const aggregator = new ChainlinkAggregator(aggregatorContract._address)
+        aggregator.price = latestRoundData.getAnswer()
+        aggregator.save()
+
+        if (i === 0) {
+          morphoChainlinkOracleData.baseAggregatorA = aggregator.id
+        } else if (i === 1) {
+          morphoChainlinkOracleData.baseAggregatorB = aggregator.id
+        } else if (i === 2) {
+          morphoChainlinkOracleData.quoteAggregatorA = aggregator.id
+        } else if (i === 3) {
+          morphoChainlinkOracleData.quoteAggregatorB = aggregator.id
+        }
+
+        const priceUpdate = new ChainlinkAggregatorPriceUpdate(0)
+        priceUpdate.chainlinkAggregator = aggregator.id
+        priceUpdate.price = aggregator.price
+        priceUpdate.roundId = latestRoundData.getRoundId()
+        priceUpdate.timestamp = latestRoundData.getUpdatedAt().toI64()
+        priceUpdate.save()
+      }
+
+      morphoChainlinkOracleData.save()
+    }
+
+    lendingAdapter.oracle = oracle.id
   }
 
   lendingAdapter.save()
@@ -409,7 +368,6 @@ function initLeverageManagerAssetStats(leverageManager: Address, asset: Address)
     leverageManagerAssetStats = new LeverageManagerAssetStats(asset)
     leverageManagerAssetStats.leverageManager = leverageManager
     leverageManagerAssetStats.totalCollateral = BigInt.zero()
-    leverageManagerAssetStats.totalDebt = BigInt.zero()
     leverageManagerAssetStats.save()
   }
   return leverageManagerAssetStats

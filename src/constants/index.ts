@@ -3,6 +3,10 @@ export enum ExternalAction {
   REDEEM = 1,
 }
 
+export namespace OracleType {
+  export const MORPHO_CHAINLINK = "MORPHO_CHAINLINK";
+}
+
 export namespace LendingAdapterType {
   export const MORPHO = "MORPHO";
   export const OTHER = "OTHER";
