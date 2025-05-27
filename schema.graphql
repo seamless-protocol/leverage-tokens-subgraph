@@ -90,7 +90,7 @@ type LeverageToken @entity(immutable: false) {
     # ======== Historical Data ========
 
     " Historical equity updates "
-    equityUpdates: [EquityUpdate!]! @derivedFrom(field: "leverageToken")
+    equityUpdates: [LeverageTokenEquity!]! @derivedFrom(field: "leverageToken")
     " Historical mint events "
     mints: [Mint!]! @derivedFrom(field: "leverageToken")
     " Historical redeem events "
@@ -147,7 +147,7 @@ type Position @entity(immutable: false) {
     redeems: [Redeem!]! @derivedFrom(field: "position")
     # TODO: Just store balance changes instead, we can derive equity changes by merging this dataset with the leverage token equity updates
     " Historical equity updates "
-    equityUpdates: [PositionEquityUpdate!]! @derivedFrom(field: "position")
+    equityUpdates: [PositionEquity!]! @derivedFrom(field: "position")
 }
 
 type Mint @entity(timeseries: true) {
@@ -229,8 +229,7 @@ type RebalanceAction @entity(immutable: true) {
     amount: BigInt!
 }
 
-# TODO: call this LeverageTokenEquity
-type EquityUpdate @entity(timeseries: true) {
+type LeverageTokenEquity @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
     " The LeverageToken that the equity update is for "
@@ -247,8 +246,7 @@ type EquityUpdate @entity(timeseries: true) {
     blockNumber: BigInt!
 }
 
-# TODO: call this PositionEquity
-type PositionEquityUpdate @entity(timeseries: true) {
+type PositionEquity @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
     " The position that the equity update is for "
