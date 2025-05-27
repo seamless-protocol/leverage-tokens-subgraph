@@ -3,43 +3,81 @@
     "type": "function",
     "name": "BASE_RATIO",
     "inputs": [],
-    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "DEFAULT_ADMIN_ROLE",
     "inputs": [],
-    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "FEE_MANAGER_ROLE",
     "inputs": [],
-    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "UPGRADER_ROLE",
     "inputs": [],
-    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "UPGRADE_INTERFACE_VERSION",
     "inputs": [],
-    "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "__FeeManager_init",
     "inputs": [
-      { "name": "defaultAdmin", "type": "address", "internalType": "address" },
-      { "name": "treasury", "type": "address", "internalType": "address" }
+      {
+        "name": "defaultAdmin",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "treasury",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -88,8 +126,16 @@
           }
         ]
       },
-      { "name": "name", "type": "string", "internalType": "string" },
-      { "name": "symbol", "type": "string", "internalType": "string" }
+      {
+        "name": "name",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "symbol",
+        "type": "string",
+        "internalType": "string"
+      }
     ],
     "outputs": [
       {
@@ -104,7 +150,13 @@
     "type": "function",
     "name": "getDefaultManagementFeeAtCreation",
     "inputs": [],
-    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "stateMutability": "view"
   },
   {
@@ -117,7 +169,13 @@
         "internalType": "contract ILeverageToken"
       }
     ],
-    "outputs": [{ "name": "", "type": "uint120", "internalType": "uint120" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint120",
+        "internalType": "uint120"
+      }
+    ],
     "stateMutability": "view"
   },
   {
@@ -136,7 +194,11 @@
       }
     ],
     "outputs": [
-      { "name": "fee", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "fee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "stateMutability": "view"
   },
@@ -243,7 +305,11 @@
       }
     ],
     "outputs": [
-      { "name": "ratio", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "ratio",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "stateMutability": "view"
   },
@@ -306,8 +372,16 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          { "name": "debt", "type": "uint256", "internalType": "uint256" },
-          { "name": "equity", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "collateralRatio",
             "type": "uint256",
@@ -329,7 +403,11 @@
       }
     ],
     "outputs": [
-      { "name": "fee", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "fee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "stateMutability": "view"
   },
@@ -337,9 +415,19 @@
     "type": "function",
     "name": "getRoleAdmin",
     "inputs": [
-      { "name": "role", "type": "bytes32", "internalType": "bytes32" }
+      {
+        "name": "role",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
     ],
-    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
     "stateMutability": "view"
   },
   {
@@ -347,7 +435,11 @@
     "name": "getTreasury",
     "inputs": [],
     "outputs": [
-      { "name": "treasury", "type": "address", "internalType": "address" }
+      {
+        "name": "treasury",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
     "stateMutability": "view"
   },
@@ -362,7 +454,11 @@
       }
     ],
     "outputs": [
-      { "name": "fee", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "fee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "stateMutability": "view"
   },
@@ -370,8 +466,16 @@
     "type": "function",
     "name": "grantRole",
     "inputs": [
-      { "name": "role", "type": "bytes32", "internalType": "bytes32" },
-      { "name": "account", "type": "address", "internalType": "address" }
+      {
+        "name": "role",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -380,18 +484,40 @@
     "type": "function",
     "name": "hasRole",
     "inputs": [
-      { "name": "role", "type": "bytes32", "internalType": "bytes32" },
-      { "name": "account", "type": "address", "internalType": "address" }
+      {
+        "name": "role",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
-    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "initialize",
     "inputs": [
-      { "name": "initialAdmin", "type": "address", "internalType": "address" },
-      { "name": "treasury", "type": "address", "internalType": "address" },
+      {
+        "name": "initialAdmin",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "treasury",
+        "type": "address",
+        "internalType": "address"
+      },
       {
         "name": "leverageTokenFactory",
         "type": "address",
@@ -415,7 +541,11 @@
         "type": "uint256",
         "internalType": "uint256"
       },
-      { "name": "minShares", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "minShares",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [
       {
@@ -428,10 +558,26 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          { "name": "debt", "type": "uint256", "internalType": "uint256" },
-          { "name": "equity", "type": "uint256", "internalType": "uint256" },
-          { "name": "shares", "type": "uint256", "internalType": "uint256" },
-          { "name": "tokenFee", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tokenFee",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "treasuryFee",
             "type": "uint256",
@@ -468,10 +614,26 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          { "name": "debt", "type": "uint256", "internalType": "uint256" },
-          { "name": "equity", "type": "uint256", "internalType": "uint256" },
-          { "name": "shares", "type": "uint256", "internalType": "uint256" },
-          { "name": "tokenFee", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tokenFee",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "treasuryFee",
             "type": "uint256",
@@ -508,10 +670,26 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          { "name": "debt", "type": "uint256", "internalType": "uint256" },
-          { "name": "equity", "type": "uint256", "internalType": "uint256" },
-          { "name": "shares", "type": "uint256", "internalType": "uint256" },
-          { "name": "tokenFee", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tokenFee",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "treasuryFee",
             "type": "uint256",
@@ -526,7 +704,13 @@
     "type": "function",
     "name": "proxiableUUID",
     "inputs": [],
-    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
     "stateMutability": "view"
   },
   {
@@ -548,7 +732,11 @@
             "type": "uint8",
             "internalType": "enum ActionType"
           },
-          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+          {
+            "name": "amount",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
         ]
       },
       {
@@ -561,8 +749,16 @@
         "type": "address",
         "internalType": "contract IERC20"
       },
-      { "name": "amountIn", "type": "uint256", "internalType": "uint256" },
-      { "name": "amountOut", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "amountIn",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "amountOut",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -581,7 +777,11 @@
         "type": "uint256",
         "internalType": "uint256"
       },
-      { "name": "maxShares", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "maxShares",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [
       {
@@ -594,10 +794,26 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          { "name": "debt", "type": "uint256", "internalType": "uint256" },
-          { "name": "equity", "type": "uint256", "internalType": "uint256" },
-          { "name": "shares", "type": "uint256", "internalType": "uint256" },
-          { "name": "tokenFee", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tokenFee",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "treasuryFee",
             "type": "uint256",
@@ -612,7 +828,11 @@
     "type": "function",
     "name": "renounceRole",
     "inputs": [
-      { "name": "role", "type": "bytes32", "internalType": "bytes32" },
+      {
+        "name": "role",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
       {
         "name": "callerConfirmation",
         "type": "address",
@@ -626,8 +846,16 @@
     "type": "function",
     "name": "revokeRole",
     "inputs": [
-      { "name": "role", "type": "bytes32", "internalType": "bytes32" },
-      { "name": "account", "type": "address", "internalType": "address" }
+      {
+        "name": "role",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -635,7 +863,13 @@
   {
     "type": "function",
     "name": "setDefaultManagementFeeAtCreation",
-    "inputs": [{ "name": "fee", "type": "uint256", "internalType": "uint256" }],
+    "inputs": [
+      {
+        "name": "fee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -648,7 +882,11 @@
         "type": "address",
         "internalType": "contract ILeverageToken"
       },
-      { "name": "fee", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "fee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -657,7 +895,11 @@
     "type": "function",
     "name": "setTreasury",
     "inputs": [
-      { "name": "treasury", "type": "address", "internalType": "address" }
+      {
+        "name": "treasury",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -671,7 +913,11 @@
         "type": "uint8",
         "internalType": "enum ExternalAction"
       },
-      { "name": "fee", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "fee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -680,9 +926,19 @@
     "type": "function",
     "name": "supportsInterface",
     "inputs": [
-      { "name": "interfaceId", "type": "bytes4", "internalType": "bytes4" }
+      {
+        "name": "interfaceId",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
     ],
-    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
     "stateMutability": "view"
   },
   {
@@ -694,7 +950,11 @@
         "type": "address",
         "internalType": "address"
       },
-      { "name": "data", "type": "bytes", "internalType": "bytes" }
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
     ],
     "outputs": [],
     "stateMutability": "payable"
@@ -881,10 +1141,26 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          { "name": "debt", "type": "uint256", "internalType": "uint256" },
-          { "name": "equity", "type": "uint256", "internalType": "uint256" },
-          { "name": "shares", "type": "uint256", "internalType": "uint256" },
-          { "name": "tokenFee", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tokenFee",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "treasuryFee",
             "type": "uint256",
@@ -912,6 +1188,62 @@
         "internalType": "address"
       },
       {
+        "name": "stateBefore",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct LeverageTokenState",
+        "components": [
+          {
+            "name": "collateralInDebtAsset",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "collateralRatio",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      },
+      {
+        "name": "stateAfter",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct LeverageTokenState",
+        "components": [
+          {
+            "name": "collateralInDebtAsset",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "collateralRatio",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      },
+      {
         "name": "actions",
         "type": "tuple[]",
         "indexed": false,
@@ -922,7 +1254,11 @@
             "type": "uint8",
             "internalType": "enum ActionType"
           },
-          { "name": "amount", "type": "uint256", "internalType": "uint256" }
+          {
+            "name": "amount",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
         ]
       }
     ],
@@ -955,10 +1291,26 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          { "name": "debt", "type": "uint256", "internalType": "uint256" },
-          { "name": "equity", "type": "uint256", "internalType": "uint256" },
-          { "name": "shares", "type": "uint256", "internalType": "uint256" },
-          { "name": "tokenFee", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "debt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "equity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tokenFee",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "treasuryFee",
             "type": "uint256",
@@ -1089,42 +1441,90 @@
     ],
     "anonymous": false
   },
-  { "type": "error", "name": "AccessControlBadConfirmation", "inputs": [] },
+  {
+    "type": "error",
+    "name": "AccessControlBadConfirmation",
+    "inputs": []
+  },
   {
     "type": "error",
     "name": "AccessControlUnauthorizedAccount",
     "inputs": [
-      { "name": "account", "type": "address", "internalType": "address" },
-      { "name": "neededRole", "type": "bytes32", "internalType": "bytes32" }
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "neededRole",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
     ]
   },
   {
     "type": "error",
     "name": "AddressEmptyCode",
     "inputs": [
-      { "name": "target", "type": "address", "internalType": "address" }
+      {
+        "name": "target",
+        "type": "address",
+        "internalType": "address"
+      }
     ]
   },
   {
     "type": "error",
     "name": "ERC1967InvalidImplementation",
     "inputs": [
-      { "name": "implementation", "type": "address", "internalType": "address" }
+      {
+        "name": "implementation",
+        "type": "address",
+        "internalType": "address"
+      }
     ]
   },
-  { "type": "error", "name": "ERC1967NonPayable", "inputs": [] },
-  { "type": "error", "name": "FailedCall", "inputs": [] },
+  {
+    "type": "error",
+    "name": "ERC1967NonPayable",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FailedCall",
+    "inputs": []
+  },
   {
     "type": "error",
     "name": "FeeTooHigh",
     "inputs": [
-      { "name": "fee", "type": "uint256", "internalType": "uint256" },
-      { "name": "maxFee", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "fee",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxFee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ]
   },
-  { "type": "error", "name": "InvalidCollateralRatios", "inputs": [] },
-  { "type": "error", "name": "InvalidInitialization", "inputs": [] },
-  { "type": "error", "name": "InvalidLeverageTokenAssets", "inputs": [] },
+  {
+    "type": "error",
+    "name": "InvalidCollateralRatios",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidInitialization",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidLeverageTokenAssets",
+    "inputs": []
+  },
   {
     "type": "error",
     "name": "InvalidLeverageTokenStateAfterRebalance",
@@ -1141,7 +1541,11 @@
     "name": "LeverageTokenNotEligibleForRebalance",
     "inputs": []
   },
-  { "type": "error", "name": "NotInitializing", "inputs": [] },
+  {
+    "type": "error",
+    "name": "NotInitializing",
+    "inputs": []
+  },
   {
     "type": "error",
     "name": "NotRebalancer",
@@ -1151,30 +1555,64 @@
         "type": "address",
         "internalType": "contract ILeverageToken"
       },
-      { "name": "caller", "type": "address", "internalType": "address" }
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
     ]
   },
-  { "type": "error", "name": "ReentrancyGuardReentrantCall", "inputs": [] },
+  {
+    "type": "error",
+    "name": "ReentrancyGuardReentrantCall",
+    "inputs": []
+  },
   {
     "type": "error",
     "name": "SafeERC20FailedOperation",
     "inputs": [
-      { "name": "token", "type": "address", "internalType": "address" }
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
     ]
   },
   {
     "type": "error",
     "name": "SlippageTooHigh",
     "inputs": [
-      { "name": "actual", "type": "uint256", "internalType": "uint256" },
-      { "name": "expected", "type": "uint256", "internalType": "uint256" }
+      {
+        "name": "actual",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ]
   },
-  { "type": "error", "name": "UUPSUnauthorizedCallContext", "inputs": [] },
+  {
+    "type": "error",
+    "name": "UUPSUnauthorizedCallContext",
+    "inputs": []
+  },
   {
     "type": "error",
     "name": "UUPSUnsupportedProxiableUUID",
-    "inputs": [{ "name": "slot", "type": "bytes32", "internalType": "bytes32" }]
+    "inputs": [
+      {
+        "name": "slot",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
   },
-  { "type": "error", "name": "ZeroAddressTreasury", "inputs": [] }
+  {
+    "type": "error",
+    "name": "ZeroAddressTreasury",
+    "inputs": []
+  }
 ]

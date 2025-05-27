@@ -46,8 +46,6 @@ type LeverageManagerAssetStats @entity(immutable: false) {
     totalCollateral: BigInt!
     " Total debt of this asset managed by all LeverageTokens managed by this LeverageManager "
     totalDebt: BigInt!
-    " Total equity in this asset managed by all LeverageTokens managed by this LeverageManager "
-    totalEquity: BigInt!
 }
 
 type LeverageToken @entity(immutable: false) {
@@ -99,6 +97,9 @@ type LeverageToken @entity(immutable: false) {
     " Current total number of unique LeverageToken holders "
     totalHolders: BigInt!
 
+    " User positions in the LeverageToken "
+    positions: [Position!]! @derivedFrom(field: "leverageToken")
+
     # ======== Fees Earned ========
 
     " Total mint token action fees earned "
@@ -114,20 +115,14 @@ type LeverageToken @entity(immutable: false) {
 
     # ======== Historical Data ========
 
-    # " Historical collateral updates "
-    # collateralUpdates: [CollateralUpdate!]! @derivedFrom(field: "leverageToken")
-    # " Historical debt updates "
-    # debtUpdates: [DebtUpdate!]! @derivedFrom(field: "leverageToken")
     # " Historical equity updates "
-    # equityUpdates: [EquityUpdate!]! @derivedFrom(field: "leverageToken")
-    # " Historical mint events "
-    # mints: [Mint!]! @derivedFrom(field: "leverageToken")
-    # " Historical redeem events "
-    # redeems: [Redeem!]! @derivedFrom(field: "leverageToken")
+    equityUpdates: [EquityUpdate!]! @derivedFrom(field: "leverageToken")
+    " Historical mint events "
+    mints: [Mint!]! @derivedFrom(field: "leverageToken")
+    " Historical redeem events "
+    redeems: [Redeem!]! @derivedFrom(field: "leverageToken")
     # " Historical rebalances "
     # rebalances: [Rebalance!]! @derivedFrom(field: "leverageToken")
-    # " Historical position updates "
-    # positionUpdates: [Position!]! @derivedFrom(field: "leverageToken")
 
     # ======== Additional Metadata ========
 
@@ -159,21 +154,13 @@ type User @entity(immutable: false) {
 
 type Position @entity(immutable: false) {
     " { User address }-{ LT address } "
-    id: Bytes!
+    id: ID!
     " Address of the user "
     user: User!
     " Address of the LeverageToken "
     leverageToken: LeverageToken!
     " Balance of the LeverageToken held by the user "
     balance: BigInt!
-    " Collateral in the position "
-    collateral: BigInt!
-    " Collateral in debt asset of the position "
-    collateralInDebt: BigInt!
-    " Debt in the position "
-    debt: BigInt!
-    " Debt in collateral asset of the position "
-    debtInCollateral: BigInt!
     " Equity in collateral asset of the position "
     equityInCollateral: BigInt!
     " Equity in debt asset of the position "
@@ -182,6 +169,8 @@ type Position @entity(immutable: false) {
     mints: [Mint!]! @derivedFrom(field: "position")
     " Historical redeems "
     redeems: [Redeem!]! @derivedFrom(field: "position")
+    " Historical equity updates "
+    equityUpdates: [PositionEquityUpdate!]! @derivedFrom(field: "position")
 }
 
 type Mint @entity(timeseries: true) {
@@ -279,36 +268,6 @@ type RebalanceAction @entity(immutable: true) {
     amount: BigInt!
 }
 
-type CollateralUpdate @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
-    " The LeverageToken that the collateral update is for "
-    leverageToken: LeverageToken!
-    " The total collateral amount after this update "
-    totalCollateral: BigInt!
-    " The change in collateral amount "
-    collateralChange: BigInt!
-    " Timestamp of the update "
-    timestamp: Timestamp!
-    " Block number of the update "
-    blockNumber: BigInt!
-}
-
-type DebtUpdate @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
-    " The LeverageToken that the debt update is for "
-    leverageToken: LeverageToken!
-    " The total debt amount after this update "
-    totalDebt: BigInt!
-    " The change in debt amount "
-    debtChange: BigInt!
-    " Timestamp of the update "
-    timestamp: Timestamp!
-    " Block number of the update "
-    blockNumber: BigInt!
-}
-
 type EquityUpdate @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
@@ -316,16 +275,35 @@ type EquityUpdate @entity(timeseries: true) {
     leverageToken: LeverageToken!
     " The collateral ratio of the LeverageToken at the time of the update "
     collateralRatio: BigInt!
+    " The total collateral amount after this update "
+    totalCollateral: BigInt!
+    " The total collateral in debt asset after this update "
+    totalCollateralInDebt: BigInt!
+    " The total debt amount after this update "
+    totalDebt: BigInt!
+    " The total debt in collateral asset after this update "
+    totalDebtInCollateral: BigInt!
     " The total equity amount in collateral after this update "
     totalEquityInCollateral: BigInt!
     " The total equity amount in debt after this update "
     totalEquityInDebt: BigInt!
-    " The change in equity amount in collateral "
-    equityChangeInCollateral: BigInt!
-    " The change in equity amount in debt "
-    equityChangeInDebt: BigInt!
     " Timestamp of the update "
     timestamp: Timestamp!
     " Block number of the update "
+    blockNumber: BigInt!
+}
+
+type PositionEquityUpdate @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The position that the equity update is for "
+    position: Position!
+    " The equity amount in collateral asset of the position "
+    equityInCollateral: BigInt!
+    " The equity amount in debt asset of the position "
+    equityInDebt: BigInt!
+    " The timestamp of the equity update "
+    timestamp: Timestamp!
+    " The block number of the equity update "
     blockNumber: BigInt!
 }
