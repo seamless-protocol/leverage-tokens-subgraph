@@ -161,14 +161,6 @@ type Position @entity(immutable: false) {
     leverageToken: LeverageToken!
     " Balance of the LeverageToken held by the user "
     balance: BigInt!
-    " Collateral in the position "
-    collateral: BigInt!
-    " Collateral in debt asset of the position "
-    collateralInDebt: BigInt!
-    " Debt in the position "
-    debt: BigInt!
-    " Debt in collateral asset of the position "
-    debtInCollateral: BigInt!
     " Equity in collateral asset of the position "
     equityInCollateral: BigInt!
     " Equity in debt asset of the position "
@@ -306,14 +298,6 @@ type PositionEquityUpdate @entity(timeseries: true) {
     id: Int8!
     " The position that the equity update is for "
     position: Position!
-    " The collateral in the position "
-    collateral: BigInt!
-    " The collateral in debt asset of the position "
-    collateralInDebt: BigInt!
-    " The debt in the position "
-    debt: BigInt!
-    " The debt in collateral asset of the position "
-    debtInCollateral: BigInt!
     " The equity amount in collateral asset of the position "
     equityInCollateral: BigInt!
     " The equity amount in debt asset of the position "
