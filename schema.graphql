@@ -221,11 +221,11 @@ type Balance @entity(timeseries: true) {
     id: Int8!
     " The position that the balance is for "
     position: Position!
-    " The balance added to the position "
+    " The balance added / removed to the position "
     amount: BigInt!
-    " The equity value of the balance added in collateral asset "
+    " The equity value of the balance added / removed in collateral asset "
     equityInCollateral: BigInt!
-    " The equity value of the balance added in debt asset "
+    " The equity value of the balance added / removed in debt asset "
     equityInDebt: BigInt!
     " The timestamp of this data point "
     timestamp: Timestamp!
