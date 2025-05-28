@@ -35,7 +35,6 @@ export function handleTransfer(event: TransferEvent): void {
     leverageToken.totalSupply = leverageToken.totalSupply.minus(event.params.value)
   } else {
     // TODO: Calculate equity in debt delta
-    // Used for calculating realized pnl on transfers
     equityInCollateralDelta = calculateEquityForShares(
       event.params.value,
       equityInCollateral,

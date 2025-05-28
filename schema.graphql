@@ -141,7 +141,7 @@ type Position @entity(immutable: false) {
     equityPaidInCollateral: BigInt!
     " Equity paid by the user in debt asset of the position for the balance (i.e. the amount without any pnl) "
     equityPaidInDebt: BigInt!
-    " Total pnl realized by the user in the position "
+    " Total pnl realized by the user in the position, in the collateral asset of the position "
     totalPnl: BigInt!
     " Historical profit and loss data points "
     pnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
@@ -158,7 +158,7 @@ type ProfitAndLoss @entity(timeseries: true) {
     id: Int8!
     " The position that the pnl data point is for "
     position: Position!
-    " The realized pnl "
+    " The realized pnl in the collateral asset of the position "
     realized: BigInt!
     " The timestamp of this data point "
     timestamp: Timestamp!
