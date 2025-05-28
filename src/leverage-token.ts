@@ -61,7 +61,7 @@ export function handleTransfer(event: TransferEvent): void {
         .times(fromPosition.equityPaidInCollateral)
         .div(fromPosition.balance)
       const realizedEquityInCollateral = equityInCollateralDelta.minus(equityPaidForSharesInCollateral)
-      updatePnl(event, fromPosition, realizedEquityInCollateral)
+      updatePnl(event, fromPosition, realizedEquityInCollateral, equityInCollateralDelta, equityPaidForSharesInCollateral)
       fromPosition.totalPnl = fromPosition.totalPnl.plus(realizedEquityInCollateral)
 
       fromPosition.equityPaidInCollateral = fromPosition.equityPaidInCollateral.minus(equityPaidForSharesInCollateral);
@@ -127,10 +127,18 @@ function calculateEquityForShares(shares: BigInt, totalEquity: BigInt, totalSupp
   return shares.times(totalEquity).div(totalSupply);
 }
 
-function updatePnl(event: TransferEvent, position: Position, realizedEquityInCollateral: BigInt): void {
+function updatePnl(
+  event: TransferEvent,
+  position: Position,
+  realizedEquityInCollateral: BigInt,
+  equityReceivedInCollateral: BigInt,
+  equityPaidInCollateral: BigInt
+): void {
   const pnl = new ProfitAndLoss(0)
   pnl.position = position.id
   pnl.realized = realizedEquityInCollateral
+  pnl.equityReceived = equityReceivedInCollateral
+  pnl.equityPaid = equityPaidInCollateral
   pnl.timestamp = event.block.timestamp.toI64()
   pnl.blockNumber = event.block.number
   pnl.save()

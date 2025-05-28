@@ -258,6 +258,8 @@ export function handleRedeem(event: RedeemEvent): void {
   const pnl = new ProfitAndLoss(0)
   pnl.position = position.id
   pnl.realized = redeem.equityInCollateral.minus(equityPaidForSharesInCollateral)
+  pnl.equityReceived = redeem.equityInCollateral
+  pnl.equityPaid = equityPaidForSharesInCollateral
   pnl.timestamp = redeem.timestamp
   pnl.blockNumber = redeem.blockNumber
   pnl.save()

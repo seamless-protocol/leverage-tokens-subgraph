@@ -160,6 +160,10 @@ type ProfitAndLoss @entity(timeseries: true) {
     position: Position!
     " The realized pnl in the collateral asset of the position "
     realized: BigInt!
+    " The equity value of the shares that incurred the realized pnl, in the collateral asset of the position "
+    equityReceived: BigInt!
+    " The equity value of the shares at the time the user received them, from mints or transfers "
+    equityPaid: BigInt!
     " The timestamp of this data point "
     timestamp: Timestamp!
     " The block number of this data point "
