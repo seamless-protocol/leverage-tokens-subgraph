@@ -279,21 +279,6 @@ type LeverageTokenEquity @entity(timeseries: true) {
     blockNumber: BigInt!
 }
 
-type PositionEquity @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
-    " The position that the equity update is for "
-    position: Position!
-    " The equity amount in collateral asset of the position "
-    equityInCollateral: BigInt!
-    " The equity amount in debt asset of the position "
-    equityInDebt: BigInt!
-    " The timestamp of the equity update "
-    timestamp: Timestamp!
-    " The block number of the equity update "
-    blockNumber: BigInt!
-}
-
 type Oracle @entity(immutable: true) {
     " Address of the oracle "
     id: Bytes!

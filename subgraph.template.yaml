@@ -152,6 +152,8 @@ templates:
           file: ./abis/ERC20.json
         - name: LeverageToken
           file: ./abis/LeverageToken.json
+        - name: LendingAdapter
+          file: ./abis/LendingAdapter.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
