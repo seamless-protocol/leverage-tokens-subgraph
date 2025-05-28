@@ -28,16 +28,21 @@ export function handleTransfer(event: TransferEvent): void {
   // We have to fetch the current equity on chain due to interest accrual potentially changing the current amount of equity
   const lendingAdapterContract = LendingAdapterContract.bind(Address.fromBytes(leverageToken.lendingAdapter))
   const equityInCollateral = lendingAdapterContract.getEquityInCollateralAsset()
+  const equityInDebt = lendingAdapterContract.getEquityInDebtAsset()
 
   if (isMint) {
     leverageToken.totalSupply = leverageToken.totalSupply.plus(event.params.value)
   } else if (isBurn) {
     leverageToken.totalSupply = leverageToken.totalSupply.minus(event.params.value)
   } else {
-    // TODO: Calculate equity in debt delta
     equityInCollateralDelta = calculateEquityForShares(
       event.params.value,
       equityInCollateral,
+      leverageToken.totalSupply
+    )
+    equityInDebtDelta = calculateEquityForShares(
+      event.params.value,
+      equityInDebt,
       leverageToken.totalSupply
     )
   }
@@ -60,7 +65,7 @@ export function handleTransfer(event: TransferEvent): void {
       fromPosition.totalPnl = fromPosition.totalPnl.plus(realizedEquityInCollateral)
 
       fromPosition.equityPaidInCollateral = fromPosition.equityPaidInCollateral.minus(equityPaidForSharesInCollateral);
-      fromPosition.equityPaidInDebt = BigInt.zero() // TODO: Calculate equity paid in debt
+      fromPosition.equityPaidInDebt = fromPosition.equityPaidInDebt.minus(BigInt.zero()) // TODO: Calculate equity paid in debt
       fromPosition.balance = fromPosition.balance.minus(event.params.value);
       fromPosition.save()
 
