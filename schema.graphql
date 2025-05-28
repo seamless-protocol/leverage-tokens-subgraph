@@ -137,17 +137,33 @@ type Position @entity(immutable: false) {
     leverageToken: LeverageToken!
     " Balance of the LeverageToken held by the user "
     balance: BigInt!
-    " Equity in collateral asset of the position "
-    equityInCollateral: BigInt!
-    " Equity in debt asset of the position "
-    equityInDebt: BigInt!
+    " Equity paid by the user in collateral asset of the position for the balance (i.e. the amount without any pnl) "
+    equityPaidInCollateral: BigInt!
+    " Equity paid by the user in debt asset of the position for the balance (i.e. the amount without any pnl) "
+    equityPaidInDebt: BigInt!
+    " Total pnl realized by the user in the position "
+    totalPnl: BigInt!
+    " Historical profit and loss data points "
+    pnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
     " Historical mints "
     mints: [Mint!]! @derivedFrom(field: "position")
     " Historical redeems "
     redeems: [Redeem!]! @derivedFrom(field: "position")
-    # TODO: Just store balance changes instead, we can derive equity changes by merging this dataset with the leverage token equity updates
-    " Historical equity updates "
-    equityUpdates: [PositionEquity!]! @derivedFrom(field: "position")
+    " Historical balance data points "
+    balanceHistory: [Balance!]! @derivedFrom(field: "position")
+}
+
+type ProfitAndLoss @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The position that the pnl data point is for "
+    position: Position!
+    " The realized pnl "
+    realized: BigInt!
+    " The timestamp of this data point "
+    timestamp: Timestamp!
+    " The block number of this data point "
+    blockNumber: BigInt!
 }
 
 type Mint @entity(timeseries: true) {
@@ -193,6 +209,23 @@ type Redeem @entity(timeseries: true) {
     " Timestamp of the redeem "
     timestamp: Timestamp!
     " Block number of the redeem "
+    blockNumber: BigInt!
+}
+
+type Balance @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The position that the balance is for "
+    position: Position!
+    " The balance added to the position "
+    amount: BigInt!
+    " The equity value of the balance added in collateral asset "
+    equityInCollateral: BigInt!
+    " The equity value of the balance added in debt asset "
+    equityInDebt: BigInt!
+    " The timestamp of this data point "
+    timestamp: Timestamp!
+    " The block number of this data point "
     blockNumber: BigInt!
 }
 

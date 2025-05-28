@@ -1,9 +1,10 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { LeverageManager, LeverageToken, Position, PositionEquity, User } from "../generated/schema"
+import { Balance, LeverageManager, LeverageToken, Position, ProfitAndLoss, User } from "../generated/schema"
 import {
   Transfer as TransferEvent,
 } from "../generated/templates/LeverageToken/LeverageToken"
 import { getPositionStub } from "./stubs"
+import { getPosition } from "./utils"
 
 export function handleTransfer(event: TransferEvent): void {
   const leverageToken = LeverageToken.load(event.address)
@@ -16,9 +17,8 @@ export function handleTransfer(event: TransferEvent): void {
     return
   }
 
-  const isTransferEvent = isTransfer(event)
-  const equityInCollateralDelta = isTransferEvent ? calculateEquityForShares(event.params.value, leverageToken.totalEquityInCollateral, leverageToken.totalSupply) : BigInt.zero()
-  const equityInDebtDelta = isTransferEvent ? calculateEquityForShares(event.params.value, leverageToken.totalEquityInDebt, leverageToken.totalSupply) : BigInt.zero()
+  const equityInCollateralDelta = leverageToken.totalSupply.gt(BigInt.zero()) ? calculateEquityForShares(event.params.value, leverageToken.totalEquityInCollateral, leverageToken.totalSupply) : BigInt.zero()
+  const equityInDebtDelta = leverageToken.totalSupply.gt(BigInt.zero()) ? calculateEquityForShares(event.params.value, leverageToken.totalEquityInDebt, leverageToken.totalSupply) : BigInt.zero()
 
   if (event.params.from.equals(Address.zero())) {
     leverageToken.totalSupply = leverageToken.totalSupply.plus(event.params.value)
@@ -27,15 +27,21 @@ export function handleTransfer(event: TransferEvent): void {
   }
 
   if (event.params.from.notEqual(Address.zero())) {
-    const fromPositionId = event.params.from.toHexString().concat("-").concat(leverageToken.id.toHexString())
-    let fromPosition = Position.load(fromPositionId)
+    const fromPosition = getPosition(event.params.from, Address.fromBytes(leverageToken.id))
     if (!fromPosition) {
       return
     }
 
-    if (isTransferEvent) {
-      updatePositionEquityAndBalance(event, fromPosition, equityInCollateralDelta, equityInDebtDelta, event.params.value, false)
-    }
+    const equityPaidForSharesInCollateral = event.params.value.times(fromPosition.equityPaidInCollateral).div(fromPosition.balance)
+    const realizedEquityInCollateral = equityInCollateralDelta.minus(equityPaidForSharesInCollateral)
+    const pnl = new ProfitAndLoss(0)
+    pnl.position = fromPosition.id
+    pnl.realized = realizedEquityInCollateral
+    pnl.timestamp = event.block.timestamp.toI64()
+    pnl.blockNumber = event.block.number
+    pnl.save()
+
+    updatePositionEquityAndBalance(event, fromPosition, equityPaidForSharesInCollateral, equityInDebtDelta, realizedEquityInCollateral, event.params.value, false)
 
     if (fromPosition.balance.isZero()) {
       leverageToken.totalHolders = leverageToken.totalHolders.minus(BigInt.fromI32(1))
@@ -50,8 +56,7 @@ export function handleTransfer(event: TransferEvent): void {
       user.save()
     }
 
-    const toPositionId = event.params.to.toHexString().concat("-").concat(leverageToken.id.toHexString())
-    let toPosition = Position.load(toPositionId)
+    let toPosition = getPosition(event.params.to, Address.fromBytes(leverageToken.id))
     if (!toPosition) {
       toPosition = getPositionStub(Address.fromBytes(user.id), Address.fromBytes(leverageToken.id))
     }
@@ -61,10 +66,7 @@ export function handleTransfer(event: TransferEvent): void {
       leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
     }
 
-
-    if (isTransferEvent) {
-      updatePositionEquityAndBalance(event, toPosition, equityInCollateralDelta, equityInDebtDelta, event.params.value, true)
-    }
+    updatePositionEquityAndBalance(event, toPosition, equityInCollateralDelta, equityInDebtDelta, BigInt.zero(), event.params.value, true)
   }
 
   leverageToken.save()
@@ -79,24 +81,28 @@ function isTransfer(event: TransferEvent): boolean {
   return event.params.from.notEqual(Address.zero()) && event.params.to.notEqual(Address.zero());
 }
 
-function updatePositionEquityAndBalance(event: TransferEvent, position: Position, equityInCollateralDelta: BigInt, equityInDebtDelta: BigInt, balanceDelta: BigInt, isIncrease: boolean): void {
-  if (isIncrease) {
-    position.equityInCollateral = position.equityInCollateral.plus(equityInCollateralDelta);
-    position.equityInDebt = position.equityInDebt.plus(equityInDebtDelta);
-    position.balance = position.balance.plus(balanceDelta);
-  } else {
-    position.equityInCollateral = position.equityInCollateral.minus(equityInCollateralDelta);
-    position.equityInDebt = position.equityInDebt.minus(equityInDebtDelta);
-    position.balance = position.balance.minus(balanceDelta);
-  }
-  position.save();
+function updatePositionEquityAndBalance(event: TransferEvent, position: Position, equityInCollateralDelta: BigInt, equityInDebtDelta: BigInt, realizedEquityInCollateral: BigInt, balanceDelta: BigInt, isIncrease: boolean): void {
+  if (isTransfer(event)) {
+    if (isIncrease) {
+      position.equityPaidInCollateral = position.equityPaidInCollateral.plus(equityInCollateralDelta);
+      position.equityPaidInDebt = position.equityPaidInDebt.plus(equityInDebtDelta);
+      position.balance = position.balance.plus(balanceDelta);
+    } else {
+      position.equityPaidInCollateral = position.equityPaidInCollateral.minus(equityInCollateralDelta);
+      position.equityPaidInDebt = position.equityPaidInDebt.minus(equityInDebtDelta);
+      position.balance = position.balance.minus(balanceDelta);
+    }
 
-  // The id for timeseries is autogenerated; even if we set it to a real value, it is silently overwritten
-  const positionEquityUpdate = new PositionEquity(0);
-  positionEquityUpdate.position = position.id;
-  positionEquityUpdate.equityInCollateral = position.equityInCollateral;
-  positionEquityUpdate.equityInDebt = position.equityInDebt;
-  positionEquityUpdate.timestamp = event.block.timestamp.toI64();
-  positionEquityUpdate.blockNumber = event.block.number;
-  positionEquityUpdate.save();
+    const balance = new Balance(0)
+    balance.position = position.id
+    balance.timestamp = event.block.timestamp.toI64()
+    balance.blockNumber = event.block.number
+    balance.amount = isIncrease ? balanceDelta : balanceDelta.neg()
+    balance.equityInCollateral = isIncrease ? equityInCollateralDelta : equityInCollateralDelta.neg()
+    balance.equityInDebt = isIncrease ? equityInDebtDelta : equityInDebtDelta.neg()
+    balance.save()
+  }
+
+  position.totalPnl = position.totalPnl.plus(realizedEquityInCollateral)
+  position.save();
 }
