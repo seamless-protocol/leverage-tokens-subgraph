@@ -150,6 +150,8 @@ templates:
       abis:
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: LeverageToken
           file: ./abis/LeverageToken.json
         - name: LendingAdapter

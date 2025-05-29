@@ -1,12 +1,12 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { Balance, LeverageManager, LeverageToken, Position, ProfitAndLoss, User } from "../generated/schema"
+import { Balance, LendingAdapter, LeverageManager, LeverageToken, Oracle, Position, ProfitAndLoss, User } from "../generated/schema"
 import {
   Transfer as TransferEvent,
 } from "../generated/templates/LeverageToken/LeverageToken"
 import { getPositionStub } from "./stubs"
 import { getPosition } from "./utils"
-import { LendingAdapter as LendingAdapterContract } from "../generated/templates/LeverageToken/LendingAdapter"
-
+import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
+import { convertDebtToCollateral } from "./utils"
 export function handleTransfer(event: TransferEvent): void {
   const leverageToken = LeverageToken.load(event.address)
   if (!leverageToken) {
@@ -18,17 +18,29 @@ export function handleTransfer(event: TransferEvent): void {
     return
   }
 
+  const lendingAdapter = LendingAdapter.load(leverageToken.lendingAdapter)
+  if (!lendingAdapter) {
+    return
+  }
+
+  const oracle = Oracle.load(lendingAdapter.oracle)
+  if (!oracle) {
+    return
+  }
+
+  // We have to fetch the current equity on chain due to interest accrual potentially changing the current amount of equity
+  const leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageToken.leverageManager))
+  const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.address)
+
+  const equityInCollateral = convertDebtToCollateral(oracle, leverageTokenState.equity)
+  const equityInDebt = leverageTokenState.equity
+
   const isBurn = event.params.to.equals(Address.zero())
   const isMint = event.params.from.equals(Address.zero())
   const isTransfer = !isBurn && !isMint
 
   let equityInCollateralDelta = BigInt.zero()
   let equityInDebtDelta = BigInt.zero()
-
-  // We have to fetch the current equity on chain due to interest accrual potentially changing the current amount of equity
-  const lendingAdapterContract = LendingAdapterContract.bind(Address.fromBytes(leverageToken.lendingAdapter))
-  const equityInCollateral = lendingAdapterContract.getEquityInCollateralAsset()
-  const equityInDebt = lendingAdapterContract.getEquityInDebtAsset()
 
   if (isMint) {
     leverageToken.totalSupply = leverageToken.totalSupply.plus(event.params.value)
@@ -60,12 +72,15 @@ export function handleTransfer(event: TransferEvent): void {
       const equityPaidForSharesInCollateral = event.params.value
         .times(fromPosition.equityPaidInCollateral)
         .div(fromPosition.balance)
+      const equityPaidForSharesInDebt = event.params.value
+        .times(fromPosition.equityPaidInDebt)
+        .div(fromPosition.balance)
       const realizedEquityInCollateral = equityInCollateralDelta.minus(equityPaidForSharesInCollateral)
       updatePnl(event, fromPosition, realizedEquityInCollateral, equityInCollateralDelta, equityPaidForSharesInCollateral)
       fromPosition.totalPnl = fromPosition.totalPnl.plus(realizedEquityInCollateral)
 
       fromPosition.equityPaidInCollateral = fromPosition.equityPaidInCollateral.minus(equityPaidForSharesInCollateral);
-      fromPosition.equityPaidInDebt = fromPosition.equityPaidInDebt.minus(BigInt.zero()) // TODO: Calculate equity paid in debt
+      fromPosition.equityPaidInDebt = fromPosition.equityPaidInDebt.minus(equityPaidForSharesInDebt)
       fromPosition.balance = fromPosition.balance.minus(event.params.value);
       fromPosition.save()
 
