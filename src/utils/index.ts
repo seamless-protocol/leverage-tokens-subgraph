@@ -46,42 +46,16 @@ export function convertCollateralToDebt(
     oracle: Oracle,
     collateral: BigInt
 ): BigInt {
-    const morphoChainlinkOracleDataId = oracle.morphoChainlinkOracleData
-
-    // TODO: Handle other oracle types
-    if (morphoChainlinkOracleDataId !== null) {
-        const morphoChainlinkOracleData = MorphoChainlinkOracleData.load(morphoChainlinkOracleDataId)
-        if (morphoChainlinkOracleData === null) {
-            return BigInt.zero()
-        }
-
-        const price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
-        return collateral.times(price).div(BigInt.fromString(MORPHO_ORACLE_PRICE_SCALE_STRING))
-    }
-
-    return BigInt.zero()
+    return collateral.times(oracle.price).div(BigInt.fromString(MORPHO_ORACLE_PRICE_SCALE_STRING))
 }
 
 export function convertDebtToCollateral(
     oracle: Oracle,
     debt: BigInt
 ): BigInt {
-    const morphoChainlinkOracleDataId = oracle.morphoChainlinkOracleData
-
-    // TODO: Handle other oracle types
-    if (morphoChainlinkOracleDataId !== null) {
-        const morphoChainlinkOracleData = MorphoChainlinkOracleData.load(morphoChainlinkOracleDataId)
-        if (morphoChainlinkOracleData === null) {
-            return BigInt.zero()
-        }
-
-        const price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
-
-        const numerator = debt.times(BigInt.fromString(MORPHO_ORACLE_PRICE_SCALE_STRING));
-        const remainder = numerator.mod(price);
-        const quotient = numerator.div(price);
-        return remainder.isZero() ? quotient : quotient.plus(BigInt.fromI32(1)); // Rounding up
-    }
-
-    return BigInt.zero()
+    const price = oracle.price
+    const numerator = debt.times(BigInt.fromString(MORPHO_ORACLE_PRICE_SCALE_STRING));
+    const remainder = numerator.mod(price);
+    const quotient = numerator.div(price);
+    return remainder.isZero() ? quotient : quotient.plus(BigInt.fromI32(1)); // Rounding up
 }
