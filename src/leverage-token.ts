@@ -67,18 +67,25 @@ export function handleTransfer(event: TransferEvent): void {
 
     if (isTransfer) {
       // Realized pnl is calculated when LTs are transferred out from an account. To calculate
-      // the realized pnl on the transfer, we calculate the difference between the equity value of the LT shares,
-      // and the equity the user paid for the shares
+      // the realized pnl on the transfer, we calculate how much the user paid for the shares.
+      // The amount they paid is the negative pnl
       const equityPaidForSharesInCollateral = event.params.value
         .times(fromPosition.equityPaidInCollateral)
         .div(fromPosition.balance)
       const equityPaidForSharesInDebt = event.params.value
         .times(fromPosition.equityPaidInDebt)
         .div(fromPosition.balance)
-      const realizedEquityInCollateral = equityInCollateralDelta.minus(equityPaidForSharesInCollateral)
-      updatePnl(event, fromPosition, realizedEquityInCollateral, equityInCollateralDelta, equityPaidForSharesInCollateral)
-      fromPosition.totalPnl = fromPosition.totalPnl.plus(realizedEquityInCollateral)
 
+      const pnl = new ProfitAndLoss(0)
+      pnl.position = fromPosition.id
+      pnl.realized = equityPaidForSharesInCollateral.neg()
+      pnl.equityReceived = BigInt.zero()
+      pnl.equityPaid = equityPaidForSharesInCollateral
+      pnl.timestamp = event.block.timestamp.toI64()
+      pnl.blockNumber = event.block.number
+      pnl.save()
+
+      fromPosition.totalPnl = fromPosition.totalPnl.minus(equityPaidForSharesInCollateral)
       fromPosition.equityPaidInCollateral = fromPosition.equityPaidInCollateral.minus(equityPaidForSharesInCollateral);
       fromPosition.equityPaidInDebt = fromPosition.equityPaidInDebt.minus(equityPaidForSharesInDebt)
       fromPosition.balance = fromPosition.balance.minus(event.params.value);
@@ -140,21 +147,4 @@ export function handleTransfer(event: TransferEvent): void {
 
 function calculateEquityForShares(shares: BigInt, totalEquity: BigInt, totalSupply: BigInt): BigInt {
   return shares.times(totalEquity).div(totalSupply);
-}
-
-function updatePnl(
-  event: TransferEvent,
-  position: Position,
-  realizedEquityInCollateral: BigInt,
-  equityReceivedInCollateral: BigInt,
-  equityPaidInCollateral: BigInt
-): void {
-  const pnl = new ProfitAndLoss(0)
-  pnl.position = position.id
-  pnl.realized = realizedEquityInCollateral
-  pnl.equityReceived = equityReceivedInCollateral
-  pnl.equityPaid = equityPaidInCollateral
-  pnl.timestamp = event.block.timestamp.toI64()
-  pnl.blockNumber = event.block.number
-  pnl.save()
 }
