@@ -24,6 +24,9 @@ type LeverageManager @entity(immutable: false) {
     assetStats: [LeverageManagerAssetStats!]! @derivedFrom(field: "leverageManager")
     " Total number of current unique LeverageToken holders across all LeverageTokens managed by this LeverageManager "
     totalHolders: BigInt!
+
+    " The oracles used by LeverageTokens managed by this LeverageManager "
+    _oracles: [Oracle!]! @derivedFrom(field: "leverageManager")
 }
 
 type LeverageManagerAssetStats @entity(immutable: false) {
@@ -281,14 +284,27 @@ type LeverageTokenEquity @entity(timeseries: true) {
 type Oracle @entity(immutable: true) {
     " Address of the oracle "
     id: Bytes!
+    " The LeverageManager that uses this oracle "
+    leverageManager: LeverageManager!
     " The type of the oracle "
     type: OracleType!
+    " The current price of the oracle "
+    price: BigInt!
     " The MorphoChainlinkOracle data, if oracle type is MORPHO_CHAINLINK "
-    morphoChainlinkOracleData: MorphoChainlinkOracleData @derivedFrom(field: "oracle")
-    " The timestamp of the current price "
+    morphoChainlinkOracleData: MorphoChainlinkOracleData
+    " The price updates for the oracle "
+    priceUpdates: [OraclePrice!]! @derivedFrom(field: "oracle")
+}
+
+type OraclePrice @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The oracle that the price is for "
+    oracle: Oracle!
+    " The price of the oracle "
+    price: BigInt!
+    " The timestamp of the price "
     timestamp: Timestamp!
-    " The block number of the current price "
-    blockNumber: BigInt!
 }
 
 type MorphoChainlinkOracleData @entity(immutable: true) {
@@ -316,19 +332,4 @@ type ChainlinkAggregator @entity(immutable: true) {
     id: Bytes!
     " The current price of the Chainlink aggregator "
     price: BigInt!
-    " Price updates for the Chainlink aggregator "
-    priceUpdates: [ChainlinkAggregatorPrice!]! @derivedFrom(field: "chainlinkAggregator")
-}
-
-type ChainlinkAggregatorPrice @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
-    " The Chainlink aggregator that the price update is for "
-    chainlinkAggregator: ChainlinkAggregator!
-    " The price on the this answer round "
-    price: BigInt!
-    " The round id of this answer round "
-    roundId: BigInt!
-    " The timestamp of this answer round "
-    timestamp: Timestamp!
 }

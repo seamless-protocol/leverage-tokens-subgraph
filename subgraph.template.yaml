@@ -17,7 +17,6 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ChainlinkAggregator
-        - ChainlinkAggregatorPriceUpdate
         - EquityUpdate
         - LendingAdapter
         - LeverageManager
@@ -171,7 +170,7 @@ templates:
       language: wasm/assemblyscript
       entities:
         - ChainlinkAggregator
-        - ChainlinkAggregatorPriceUpdate
+        - MorphoChainlinkOraclePrice
       abis:
         - name: ChainlinkAggregator
           file: ./abis/ChainlinkAggregator.json

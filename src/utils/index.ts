@@ -46,11 +46,16 @@ export function convertCollateralToDebt(
     oracle: Oracle,
     collateral: BigInt
 ): BigInt {
-    const morphoChainlinkOracleData = oracle.morphoChainlinkOracleData.load()
+    const morphoChainlinkOracleDataId = oracle.morphoChainlinkOracleData
 
     // TODO: Handle other oracle types
-    if (morphoChainlinkOracleData.length == 1) {
-        const price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData[0])
+    if (morphoChainlinkOracleDataId !== null) {
+        const morphoChainlinkOracleData = MorphoChainlinkOracleData.load(morphoChainlinkOracleDataId)
+        if (morphoChainlinkOracleData === null) {
+            return BigInt.zero()
+        }
+
+        const price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
         return collateral.times(price).div(BigInt.fromString(MORPHO_ORACLE_PRICE_SCALE_STRING))
     }
 
@@ -61,11 +66,16 @@ export function convertDebtToCollateral(
     oracle: Oracle,
     debt: BigInt
 ): BigInt {
-    const morphoChainlinkOracleData = oracle.morphoChainlinkOracleData.load()
+    const morphoChainlinkOracleDataId = oracle.morphoChainlinkOracleData
 
     // TODO: Handle other oracle types
-    if (morphoChainlinkOracleData.length == 1) {
-        const price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData[0])
+    if (morphoChainlinkOracleDataId !== null) {
+        const morphoChainlinkOracleData = MorphoChainlinkOracleData.load(morphoChainlinkOracleDataId)
+        if (morphoChainlinkOracleData === null) {
+            return BigInt.zero()
+        }
+
+        const price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
 
         const numerator = debt.times(BigInt.fromString(MORPHO_ORACLE_PRICE_SCALE_STRING));
         const remainder = numerator.mod(price);

@@ -10,9 +10,9 @@ import {
   Oracle,
   MorphoChainlinkOracleData,
   ChainlinkAggregator,
-  ChainlinkAggregatorPrice,
   Balance,
-  ProfitAndLoss
+  ProfitAndLoss,
+  OraclePrice
 } from "../generated/schema"
 import {
   LeverageManagerInitialized as LeverageManagerInitializedEvent,
@@ -32,7 +32,7 @@ import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../g
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { LendingAdapterType, MAX_UINT256_STRING, OracleType } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
-import { convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
+import { calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
 
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
@@ -58,7 +58,7 @@ export function handleLeverageTokenCreated(
 
   let lendingAdapter = LendingAdapter.load(event.params.config.lendingAdapter)
   if (!lendingAdapter) {
-    lendingAdapter = initLendingAdapter(event)
+    lendingAdapter = initLendingAdapter(event, leverageManager)
   }
 
   LeverageTokenTemplate.create(event.params.token)
@@ -312,7 +312,7 @@ export function handleRedeem(event: RedeemEvent): void {
   leverageManagerCollateralAssetStats.save()
 }
 
-function initLendingAdapter(event: LeverageTokenCreatedEvent): LendingAdapter {
+function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: LeverageManager): LendingAdapter {
   const lendingAdapterAddress = event.params.config.lendingAdapter
 
   let lendingAdapter = new LendingAdapter(lendingAdapterAddress)
@@ -336,16 +336,15 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent): LendingAdapter {
       const morphoChainlinkOracleContract = MorphoChainlinkOracleV2Contract.bind(oracleAddress);
 
       oracle = new Oracle(oracleAddress);
+      oracle.leverageManager = leverageManager.id
       oracle.type = OracleType.MORPHO_CHAINLINK
-      oracle.timestamp = event.block.timestamp.toI64()
-      oracle.blockNumber = event.block.number
-      oracle.save()
 
       let morphoChainlinkOracleData = MorphoChainlinkOracleData.load(oracleAddress)
       if (!morphoChainlinkOracleData) {
         morphoChainlinkOracleData = new MorphoChainlinkOracleData(oracleAddress)
         morphoChainlinkOracleData.oracle = oracle.id
       }
+      oracle.morphoChainlinkOracleData = morphoChainlinkOracleData.id
 
       // Only BASE_FEED_1 must be defined, the other feeds are optional
       const baseFeedA = ChainlinkEACAggregatorProxyContract.bind(morphoChainlinkOracleContract.BASE_FEED_1())
@@ -384,13 +383,6 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent): LendingAdapter {
 
           aggregator.price = latestRoundData.getAnswer()
           aggregator.save()
-
-          const priceUpdate = new ChainlinkAggregatorPrice(0)
-          priceUpdate.chainlinkAggregator = aggregator.id
-          priceUpdate.price = aggregator.price
-          priceUpdate.roundId = latestRoundData.getRoundId()
-          priceUpdate.timestamp = latestRoundData.getUpdatedAt().toI64()
-          priceUpdate.save()
         }
 
         if (i === 0) {
@@ -403,6 +395,15 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent): LendingAdapter {
           morphoChainlinkOracleData.quoteAggregatorB = aggregator.id
         }
       }
+
+      oracle.price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
+      oracle.save()
+
+      const priceUpdate = new OraclePrice(0)
+      priceUpdate.oracle = oracle.id
+      priceUpdate.price = oracle.price
+      priceUpdate.timestamp = event.block.timestamp.toI64()
+      priceUpdate.save()
 
       morphoChainlinkOracleData.save()
     }
