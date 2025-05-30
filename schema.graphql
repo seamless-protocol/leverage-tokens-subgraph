@@ -136,11 +136,13 @@ type Position @entity(immutable: false) {
     " Balance of the LeverageToken held by the user "
     balance: BigInt!
     " Equity deposited by the user in collateral asset of the position for the balance (i.e. the amount without any pnl) "
-    totalEquityDepositInCollateral: BigInt!
+    totalEquityDepositedInCollateral: BigInt!
     " Equity deposited by the user in debt asset of the position for the balance (i.e. the amount without any pnl) "
-    totalEquityDepositInDebt: BigInt!
+    totalEquityDepositedInDebt: BigInt!
     " Total realized pnl by the user in the position, in the collateral asset of the position "
-    realizedPnl: BigInt!
+    realizedPnlInCollateral: BigInt!
+    " Total realized pnl by the user in the position, in the debt asset of the position "
+    realizedPnlInDebt: BigInt!
     " Historical realized pnl data points "
     realizedPnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
     " Historical balance changes "
@@ -153,11 +155,17 @@ type ProfitAndLoss @entity(timeseries: true) {
     " The position that the pnl data point is for "
     position: Position!
     " The realized pnl in the collateral asset of the position "
-    realized: BigInt!
+    realizedInCollateral: BigInt!
+    " The realized pnl in the debt asset of the position "
+    realizedInDebt: BigInt!
     " The equity value of the shares that incurred the realized pnl, in the collateral asset of the position "
     equityReceivedInCollateral: BigInt!
+    " The equity value of the shares that incurred the realized pnl, in the debt asset of the position "
+    equityReceivedInDebt: BigInt!
     " The equity deposited for the shares at the time the user received them, in the collateral asset of the position "
     equityDepositedInCollateral: BigInt!
+    " The equity deposited for the shares at the time the user received them, in the debt asset of the position "
+    equityDepositedInDebt: BigInt!
     " The timestamp of this data point "
     timestamp: Timestamp!
     " The block number of this data point "

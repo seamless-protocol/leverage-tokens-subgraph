@@ -22,8 +22,9 @@ export function getPositionStub(
     position.user = user;
     position.leverageToken = leverageToken;
     position.balance = BigInt.zero();
-    position.totalEquityDepositInCollateral = BigInt.zero();
-    position.totalEquityDepositInDebt = BigInt.zero();
-    position.realizedPnl = BigInt.zero();
+    position.totalEquityDepositedInCollateral = BigInt.zero();
+    position.totalEquityDepositedInDebt = BigInt.zero();
+    position.realizedPnlInCollateral = BigInt.zero();
+    position.realizedPnlInDebt = BigInt.zero();
     return position;
 }
