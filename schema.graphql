@@ -89,8 +89,8 @@ type LeverageToken @entity(immutable: false) {
 
     # ======== Historical Data ========
 
-    " Historical equity updates "
-    equityUpdates: [LeverageTokenEquity!]! @derivedFrom(field: "leverageToken")
+    " Historical state updates "
+    stateUpdates: [LeverageTokenState!]! @derivedFrom(field: "leverageToken")
     " Historical balance changes "
     balanceChanges: [LeverageTokenBalanceChange!]! @derivedFrom(field: "leverageToken")
     # " Historical rebalances "
@@ -155,9 +155,9 @@ type ProfitAndLoss @entity(timeseries: true) {
     " The realized pnl in the collateral asset of the position "
     realized: BigInt!
     " The equity value of the shares that incurred the realized pnl, in the collateral asset of the position "
-    equityReceived: BigInt!
-    " The equity value of the shares at the time the user received them, from mints or transfers "
-    equityPaid: BigInt!
+    equityReceivedInCollateral: BigInt!
+    " The equity deposited for the shares at the time the user received them, in the collateral asset of the position "
+    equityDepositedInCollateral: BigInt!
     " The timestamp of this data point "
     timestamp: Timestamp!
     " The block number of this data point "
@@ -218,10 +218,10 @@ type RebalanceAction @entity(immutable: true) {
     amount: BigInt!
 }
 
-type LeverageTokenEquity @entity(timeseries: true) {
+type LeverageTokenState @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
-    " The LeverageToken that the equity update is for "
+    " The LeverageToken that the state is for "
     leverageToken: LeverageToken!
     " The collateral ratio of the LeverageToken "
     collateralRatio: BigInt!

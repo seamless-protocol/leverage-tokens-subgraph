@@ -80,13 +80,16 @@ export function handleTransfer(event: TransferEvent): void {
       const pnl = new ProfitAndLoss(0)
       pnl.position = fromPosition.id
       pnl.realized = realizedPnl
-      pnl.equityReceived = BigInt.zero()
-      pnl.equityPaid = equityDepositedForSharesInCollateral
+      pnl.equityReceivedInCollateral = BigInt.zero()
+      pnl.equityDepositedInCollateral = equityDepositedForSharesInCollateral
       pnl.timestamp = event.block.timestamp.toI64()
       pnl.blockNumber = event.block.number
       pnl.save()
 
-      fromPosition.realizedPnl = fromPosition.realizedPnl.plus(realizedPnl) // Realized pnl is negative so this decreases
+      // Realized pnl is negative so this decreases
+      fromPosition.realizedPnl = fromPosition.realizedPnl.plus(realizedPnl)
+      // The total equity deposited by the user is decreased by the equity deposited for the shares transferred
+      // This is because the shares are transferred out, and the pnl for them is now realized
       fromPosition.totalEquityDepositInCollateral = fromPosition.totalEquityDepositInCollateral.minus(equityDepositedForSharesInCollateral);
       fromPosition.totalEquityDepositInDebt = fromPosition.totalEquityDepositInDebt.minus(equityDepositedForSharesInDebt)
       fromPosition.balance = fromPosition.balance.minus(event.params.value);
