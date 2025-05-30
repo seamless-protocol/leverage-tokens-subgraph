@@ -67,9 +67,6 @@ export function handleTransfer(event: TransferEvent): void {
     }
 
     if (isTransfer) {
-      // Realized pnl is calculated when LTs are transferred out from an account. To calculate
-      // the realized pnl on the transfer, we calculate how much the user paid for the shares.
-      // The amount they paid is the negative pnl
       const equityDepositedForSharesInCollateral = event.params.value
         .times(fromPosition.totalEquityDepositInCollateral)
         .div(fromPosition.balance)
@@ -77,16 +74,19 @@ export function handleTransfer(event: TransferEvent): void {
         .times(fromPosition.totalEquityDepositInDebt)
         .div(fromPosition.balance)
 
+      // Realized pnl is calculated when LTs are transferred out from an account. The realized pnl loss is equal to the
+      // current value of the shares transferred
+      const realizedPnl = equityInCollateralDelta.neg()
       const pnl = new ProfitAndLoss(0)
       pnl.position = fromPosition.id
-      pnl.realized = equityDepositedForSharesInCollateral.neg()
+      pnl.realized = realizedPnl
       pnl.equityReceived = BigInt.zero()
       pnl.equityPaid = equityDepositedForSharesInCollateral
       pnl.timestamp = event.block.timestamp.toI64()
       pnl.blockNumber = event.block.number
       pnl.save()
 
-      fromPosition.realizedPnl = fromPosition.realizedPnl.minus(equityDepositedForSharesInCollateral)
+      fromPosition.realizedPnl = fromPosition.realizedPnl.plus(realizedPnl) // Realized pnl is negative so this decreases
       fromPosition.totalEquityDepositInCollateral = fromPosition.totalEquityDepositInCollateral.minus(equityDepositedForSharesInCollateral);
       fromPosition.totalEquityDepositInDebt = fromPosition.totalEquityDepositInDebt.minus(equityDepositedForSharesInDebt)
       fromPosition.balance = fromPosition.balance.minus(event.params.value);
@@ -128,8 +128,6 @@ export function handleTransfer(event: TransferEvent): void {
     }
 
     if (isTransfer) {
-      toPosition.totalEquityDepositInCollateral = toPosition.totalEquityDepositInCollateral.plus(equityInCollateralDelta);
-      toPosition.totalEquityDepositInDebt = toPosition.totalEquityDepositInDebt.plus(equityInDebtDelta);
       toPosition.balance = toPosition.balance.plus(event.params.value);
       toPosition.save()
 
