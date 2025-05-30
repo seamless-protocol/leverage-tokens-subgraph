@@ -12,6 +12,12 @@ export namespace LendingAdapterType {
   export const OTHER = "OTHER";
 }
 
+export namespace LeverageTokenBalanceChangeType {
+  export const MINT = "MINT";
+  export const REDEEM = "REDEEM";
+  export const TRANSFER = "TRANSFER";
+}
+
 export const MAX_UINT256_STRING = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
 export const MORPHO_ORACLE_PRICE_SCALE_STRING = "1000000000000000000000000000000000000";

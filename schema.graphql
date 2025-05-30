@@ -2,6 +2,12 @@ enum LendingAdapterType {
     MORPHO
 }
 
+enum LeverageTokenBalanceChangeType {
+    MINT
+    REDEEM
+    TRANSFER
+}
+
 enum RebalanceActionType {
     ADD_COLLATERAL
     REMOVE_COLLATERAL
@@ -85,10 +91,8 @@ type LeverageToken @entity(immutable: false) {
 
     " Historical equity updates "
     equityUpdates: [LeverageTokenEquity!]! @derivedFrom(field: "leverageToken")
-    " Historical mint events "
-    mints: [Mint!]! @derivedFrom(field: "leverageToken")
-    " Historical redeem events "
-    redeems: [Redeem!]! @derivedFrom(field: "leverageToken")
+    " Historical balance changes "
+    balanceChanges: [LeverageTokenBalanceChange!]! @derivedFrom(field: "leverageToken")
     # " Historical rebalances "
     # rebalances: [Rebalance!]! @derivedFrom(field: "leverageToken")
 
@@ -131,20 +135,16 @@ type Position @entity(immutable: false) {
     leverageToken: LeverageToken!
     " Balance of the LeverageToken held by the user "
     balance: BigInt!
-    " Equity paid by the user in collateral asset of the position for the balance (i.e. the amount without any pnl) "
-    equityPaidInCollateral: BigInt!
-    " Equity paid by the user in debt asset of the position for the balance (i.e. the amount without any pnl) "
-    equityPaidInDebt: BigInt!
-    " Total pnl realized by the user in the position, in the collateral asset of the position "
-    totalPnl: BigInt!
-    " Historical profit and loss data points "
-    pnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
-    " Historical mints "
-    mints: [Mint!]! @derivedFrom(field: "position")
-    " Historical redeems "
-    redeems: [Redeem!]! @derivedFrom(field: "position")
-    " Historical balance data points "
-    balanceHistory: [Balance!]! @derivedFrom(field: "position")
+    " Equity deposited by the user in collateral asset of the position for the balance (i.e. the amount without any pnl) "
+    totalEquityDepositInCollateral: BigInt!
+    " Equity deposited by the user in debt asset of the position for the balance (i.e. the amount without any pnl) "
+    totalEquityDepositInDebt: BigInt!
+    " Total realized pnl by the user in the position, in the collateral asset of the position "
+    realizedPnl: BigInt!
+    " Historical realized pnl data points "
+    realizedPnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
+    " Historical balance changes "
+    balanceChanges: [LeverageTokenBalanceChange!]! @derivedFrom(field: "position")
 }
 
 type ProfitAndLoss @entity(timeseries: true) {
@@ -164,57 +164,15 @@ type ProfitAndLoss @entity(timeseries: true) {
     blockNumber: BigInt!
 }
 
-type Mint @entity(timeseries: true) {
+type LeverageTokenBalanceChange @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
-    " Position that the mint is for "
-    position: Position!
-    " Address of the LeverageToken "
+    " The LeverageToken that the balance change is for "
     leverageToken: LeverageToken!
-    " Amount of LeverageToken minted "
-    amount: BigInt!
-    " Equity amount added to the position in collateral asset "
-    equityInCollateral: BigInt!
-    " Equity amount added to the position in debt asset "
-    equityInDebt: BigInt!
-    " Token action fee for the mint "
-    tokenActionFee: BigInt!
-    " Treasury action fee for the mint "
-    treasuryActionFee: BigInt!
-    " Timestamp of the mint "
-    timestamp: Timestamp!
-    " Block number of the mint "
-    blockNumber: BigInt!
-}
-
-type Redeem @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
-    " Position that the redeem is for "
-    position: Position!
-    " Address of the LeverageToken "
-    leverageToken: LeverageToken!
-    " Amount of LeverageToken redeemed "
-    amount: BigInt!
-    " Equity amount removed from the position in collateral asset "
-    equityInCollateral: BigInt!
-    " Equity amount removed from the position in debt asset "
-    equityInDebt: BigInt!
-    " Token action fee for the redeem "
-    tokenActionFee: BigInt!
-    " Treasury action fee for the redeem "
-    treasuryActionFee: BigInt!
-    " Timestamp of the redeem "
-    timestamp: Timestamp!
-    " Block number of the redeem "
-    blockNumber: BigInt!
-}
-
-type Balance @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
     " The position that the balance is for "
     position: Position!
+    " The type of balance change (MINT, REDEEM, TRANSFER) "
+    type: LeverageTokenBalanceChangeType!
     " The balance added / removed to the position "
     amount: BigInt!
     " The equity value of the balance added / removed in collateral asset "
