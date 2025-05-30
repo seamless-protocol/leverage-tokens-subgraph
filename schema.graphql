@@ -90,11 +90,11 @@ type LeverageToken @entity(immutable: false) {
     # ======== Historical Data ========
 
     " Historical state updates "
-    stateUpdates: [LeverageTokenState!]! @derivedFrom(field: "leverageToken")
+    stateHistory: [LeverageTokenState!]! @derivedFrom(field: "leverageToken")
     " Historical balance changes "
-    balanceChanges: [LeverageTokenBalanceChange!]! @derivedFrom(field: "leverageToken")
+    balanceChangeHistory: [LeverageTokenBalanceChange!]! @derivedFrom(field: "leverageToken")
     # " Historical rebalances "
-    # rebalances: [Rebalance!]! @derivedFrom(field: "leverageToken")
+    # rebalanceHistory: [Rebalance!]! @derivedFrom(field: "leverageToken")
 
     # ======== Additional Metadata ========
 
