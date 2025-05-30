@@ -28,7 +28,7 @@ import { ChainlinkAggregator as ChainlinkAggregatorTemplate } from "../generated
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/LeverageManager/MorphoChainlinkOracleV2"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, OracleType } from "./constants"
+import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
 
@@ -313,6 +313,7 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
 
       oracle = new Oracle(oracleAddress);
       oracle.leverageManager = leverageManager.id
+      oracle.decimals = MORPHO_ORACLE_PRICE_DECIMALS
       oracle.type = OracleType.MORPHO_CHAINLINK
 
       let morphoChainlinkOracleData = MorphoChainlinkOracleData.load(oracleAddress)
@@ -356,8 +357,10 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
           aggregator = new ChainlinkAggregator(aggregatorContract._address)
 
           const latestRoundData = aggregatorContract.latestRoundData()
+          const decimals = aggregatorContract.decimals()
 
           aggregator.price = latestRoundData.getAnswer()
+          aggregator.decimals = decimals
           aggregator.save()
         }
 

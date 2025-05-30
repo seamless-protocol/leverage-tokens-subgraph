@@ -248,6 +248,8 @@ type Oracle @entity(immutable: true) {
     type: OracleType!
     " The current price of the oracle "
     price: BigInt!
+    " The decimals of the oracle price "
+    decimals: Int!
     " The MorphoChainlinkOracle data, if oracle type is MORPHO_CHAINLINK "
     morphoChainlinkOracleData: MorphoChainlinkOracleData
     " The price updates for the oracle "
@@ -290,4 +292,6 @@ type ChainlinkAggregator @entity(immutable: true) {
     id: Bytes!
     " The current price of the Chainlink aggregator "
     price: BigInt!
+    " The decimals of the Chainlink aggregator price "
+    decimals: Int!
 }
