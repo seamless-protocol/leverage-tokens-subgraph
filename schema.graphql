@@ -146,7 +146,7 @@ type Position @entity(immutable: false) {
     " Historical realized pnl data points "
     realizedPnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
     " Historical balance changes "
-    balanceChanges: [LeverageTokenBalanceChange!]! @derivedFrom(field: "position")
+    balanceChangeHistory: [LeverageTokenBalanceChange!]! @derivedFrom(field: "position")
 }
 
 type ProfitAndLoss @entity(timeseries: true) {
