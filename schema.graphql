@@ -117,6 +117,8 @@ type LendingAdapter @entity(immutable: true) {
     debtAsset: Bytes!
     " The oracle used by the LendingAdapter "
     oracle: Oracle!
+    " The LeverageTokens using this LendingAdapter "
+    leverageTokens: [LeverageToken!]! @derivedFrom(field: "lendingAdapter")
 }
 
 type User @entity(immutable: false) {
@@ -262,6 +264,8 @@ type Oracle @entity(immutable: true) {
     morphoChainlinkOracleData: MorphoChainlinkOracleData
     " The price updates for the oracle "
     priceUpdates: [OraclePrice!]! @derivedFrom(field: "oracle")
+    " The LendingAdapters using this oracle "
+    lendingAdapters: [LendingAdapter!]! @derivedFrom(field: "oracle")
 }
 
 type OraclePrice @entity(timeseries: true) {
