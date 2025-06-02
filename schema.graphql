@@ -219,6 +219,7 @@ type Rebalance @entity(timeseries: true) {
 }
 
 type RebalanceAction @entity(immutable: true) {
+    " {Rebalance address}-{Action Index in Rebalance event} "
     id: ID!
     " The type of rebalance action "
     type: RebalanceActionType!
@@ -307,6 +308,7 @@ type ChainlinkAggregator @entity(immutable: true) {
 }
 
 type RebalanceAdapter @entity(immutable: false) {
+    " The address of the rebalance adapter "
     id: Bytes!
     " The LeverageToken that the rebalance adapter is for "
     leverageToken: LeverageToken!
