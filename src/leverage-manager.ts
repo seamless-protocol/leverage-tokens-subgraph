@@ -10,7 +10,9 @@ import {
   ChainlinkAggregator,
   ProfitAndLoss,
   LeverageTokenBalanceChange,
-  OraclePrice
+  OraclePrice,
+  RebalanceAdapter,
+  DutchAuctionRebalanceAdapter
 } from "../generated/schema"
 import {
   LeverageManagerInitialized as LeverageManagerInitializedEvent,
@@ -23,8 +25,10 @@ import {
 import { ChainlinkAggregator as ChainlinkAggregatorContract } from "../generated/LeverageManager/ChainlinkAggregator"
 import { ChainlinkEACAggregatorProxy as ChainlinkEACAggregatorProxyContract } from "../generated/LeverageManager/ChainlinkEACAggregatorProxy"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
+import { RebalanceAdapter as RebalanceAdapterContract } from "../generated/LeverageManager/RebalanceAdapter"
 import { LeverageToken as LeverageTokenTemplate } from "../generated/templates"
 import { ChainlinkAggregator as ChainlinkAggregatorTemplate } from "../generated/templates"
+import { RebalanceAdapter as RebalanceAdapterTemplate } from "../generated/templates"
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/LeverageManager/MorphoChainlinkOracleV2"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
@@ -68,7 +72,25 @@ export function handleLeverageTokenCreated(
   leverageToken.createdBlockNumber = event.block.number
 
   leverageToken.lendingAdapter = lendingAdapter.id
-  leverageToken.rebalanceAdapter = event.params.config.rebalanceAdapter
+  RebalanceAdapterTemplate.create(event.params.config.rebalanceAdapter)
+  const rebalanceAdapter = new RebalanceAdapter(event.params.config.rebalanceAdapter)
+
+  leverageToken.rebalanceAdapter = rebalanceAdapter.id
+  rebalanceAdapter.leverageToken = leverageToken.id
+
+  const rebalanceAdapterContract = RebalanceAdapterContract.bind(event.params.config.rebalanceAdapter)
+  const maxAuctionDuration = rebalanceAdapterContract.try_getAuctionDuration()
+  if (!maxAuctionDuration.reverted) {
+    const dutchAuctionRebalanceAdapter = new DutchAuctionRebalanceAdapter(rebalanceAdapter.id)
+    dutchAuctionRebalanceAdapter.rebalanceAdapter = rebalanceAdapter.id
+    dutchAuctionRebalanceAdapter.maxDuration = maxAuctionDuration.value
+    dutchAuctionRebalanceAdapter.totalAuctions = BigInt.fromI32(0)
+    dutchAuctionRebalanceAdapter.save()
+
+    rebalanceAdapter.dutchAuctionRebalanceAdapter = dutchAuctionRebalanceAdapter.id
+  }
+
+  rebalanceAdapter.save()
 
   // ======== Boilerplate values ========
 
@@ -186,6 +208,24 @@ export function handleMint(event: MintEvent): void {
 }
 
 export function handleRebalance(event: RebalanceEvent): void {
+  const leverageManager = LeverageManager.load(event.address)
+  if (!leverageManager) {
+    return
+  }
+  const leverageManagerContract = LeverageManagerContract.bind(event.address)
+
+  const leverageToken = LeverageToken.load(event.params.token)
+  if (!leverageToken) {
+    return
+  }
+
+  const rebalanceAdapter = RebalanceAdapter.load(leverageToken.rebalanceAdapter)
+  if (!rebalanceAdapter) {
+    return
+  }
+
+
+
 }
 
 export function handleRedeem(event: RedeemEvent): void {
