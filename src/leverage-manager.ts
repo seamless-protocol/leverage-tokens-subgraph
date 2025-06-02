@@ -12,7 +12,9 @@ import {
   LeverageTokenBalanceChange,
   OraclePrice,
   RebalanceAdapter,
-  DutchAuctionRebalanceAdapter
+  DutchAuctionRebalanceAdapter,
+  Rebalance,
+  RebalanceAction
 } from "../generated/schema"
 import {
   LeverageManagerInitialized as LeverageManagerInitializedEvent,
@@ -32,7 +34,7 @@ import { RebalanceAdapter as RebalanceAdapterTemplate } from "../generated/templ
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/LeverageManager/MorphoChainlinkOracleV2"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType } from "./constants"
+import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType, RebalanceActionType } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
 
@@ -208,24 +210,42 @@ export function handleMint(event: MintEvent): void {
 }
 
 export function handleRebalance(event: RebalanceEvent): void {
-  const leverageManager = LeverageManager.load(event.address)
-  if (!leverageManager) {
-    return
-  }
-  const leverageManagerContract = LeverageManagerContract.bind(event.address)
-
   const leverageToken = LeverageToken.load(event.params.token)
   if (!leverageToken) {
     return
   }
 
-  const rebalanceAdapter = RebalanceAdapter.load(leverageToken.rebalanceAdapter)
-  if (!rebalanceAdapter) {
+  const lendingAdapter = LendingAdapter.load(leverageToken.lendingAdapter)
+  if (!lendingAdapter) {
     return
   }
 
+  const oracle = Oracle.load(lendingAdapter.oracle)
+  if (!oracle) {
+    return
+  }
 
+  const rebalance = new Rebalance(0)
+  rebalance.leverageToken = leverageToken.id
+  rebalance.collateralRatioBefore = event.params.stateBefore.collateralRatio
+  rebalance.collateralRatioAfter = event.params.stateAfter.collateralRatio
+  rebalance.equityInCollateralBefore = convertDebtToCollateral(oracle, event.params.stateBefore.equity)
+  rebalance.equityInCollateralAfter = convertDebtToCollateral(oracle, event.params.stateAfter.equity)
+  rebalance.equityInDebtBefore = event.params.stateBefore.equity
+  rebalance.equityInDebtAfter = event.params.stateAfter.equity
+  rebalance.timestamp = event.block.timestamp.toI64()
+  rebalance.blockNumber = event.block.number
+  rebalance.save()
 
+  for (let i = 0; i < event.params.actions.length; i++) {
+    const actionData = event.params.actions[i]
+
+    const action = new RebalanceAction(`${rebalance.id}-${i}`)
+    action.type = RebalanceActionType(actionData.actionType)
+    action.amount = actionData.amount
+    action.rebalance = rebalance.id
+    action.save()
+  }
 }
 
 export function handleRedeem(event: RedeemEvent): void {

@@ -93,8 +93,8 @@ type LeverageToken @entity(immutable: false) {
     stateHistory: [LeverageTokenState!]! @derivedFrom(field: "leverageToken")
     " Historical balance changes "
     balanceChangeHistory: [LeverageTokenBalanceChange!]! @derivedFrom(field: "leverageToken")
-    # " Historical rebalances "
-    # rebalanceHistory: [Rebalance!]! @derivedFrom(field: "leverageToken")
+    " Historical rebalances "
+    rebalanceHistory: [Rebalance!]! @derivedFrom(field: "leverageToken")
 
     # ======== Additional Metadata ========
 
@@ -199,7 +199,7 @@ type Rebalance @entity(timeseries: true) {
     " The LeverageToken that the rebalance is for "
     leverageToken: LeverageToken!
     " Rebalance actions "
-    actions: [RebalanceAction!]!
+    actions: [RebalanceAction!]! @derivedFrom(field: "rebalance")
     " Collateral ratio before the rebalance "
     collateralRatioBefore: BigInt!
     " Collateral ratio after the rebalance "
@@ -219,11 +219,13 @@ type Rebalance @entity(timeseries: true) {
 }
 
 type RebalanceAction @entity(immutable: true) {
-    id: Bytes!
+    id: ID!
     " The type of rebalance action "
     type: RebalanceActionType!
     " The amount of collateral or debt added or removed, depending on the action type "
     amount: BigInt!
+    " The rebalance that the action is for "
+    rebalance: Rebalance!
 }
 
 type LeverageTokenState @entity(timeseries: true) {
@@ -310,14 +312,6 @@ type RebalanceAdapter @entity(immutable: false) {
     leverageToken: LeverageToken!
     " The dutch auction rebalance adapter data, if the rebalance adapter is using DutchAuctionRebalanceAdapter "
     dutchAuctionRebalanceAdapter: DutchAuctionRebalanceAdapter
-}
-
-type Rebalance @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
-    " The LeverageToken that the rebalance is for "
-    leverageToken: LeverageToken!
-
 }
 
 type DutchAuctionRebalanceAdapter @entity(immutable: false) {

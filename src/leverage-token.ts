@@ -1,5 +1,5 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { LendingAdapter, LeverageManager, LeverageToken, LeverageTokenBalanceChange, Oracle, Position, ProfitAndLoss, User } from "../generated/schema"
+import { LendingAdapter, LeverageManager, LeverageToken, LeverageTokenBalanceChange, Oracle, ProfitAndLoss, User } from "../generated/schema"
 import {
   Transfer as TransferEvent,
 } from "../generated/templates/LeverageToken/LeverageToken"
