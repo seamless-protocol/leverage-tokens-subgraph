@@ -1,5 +1,5 @@
 import { Address, Bytes } from "@graphprotocol/graph-ts";
-import { ChainlinkAggregator, LendingAdapter, LeverageManager, LeverageTokenState, MorphoChainlinkOracleData, OraclePrice } from "../generated/schema"
+import { ChainlinkAggregator, LeverageManager, LeverageTokenState, MorphoChainlinkOracleData, OraclePrice } from "../generated/schema"
 import { LEVERAGE_MANAGER_ADDRESS } from "./constants/addresses";
 import { AnswerUpdated as AnswerUpdatedEvent } from "../generated/templates/ChainlinkAggregator/ChainlinkAggregator";
 import { OracleType } from "./constants";
