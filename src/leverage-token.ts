@@ -75,9 +75,10 @@ export function handleTransfer(event: TransferEvent): void {
         .div(fromPosition.balance)
 
       // Realized pnl is calculated when LTs are transferred out from an account. The realized pnl loss is equal to the
-      // current value of the shares transferred
-      const realizedPnlInCollateral = equityInCollateralDelta.neg()
-      const realizedPnlInDebt = equityInDebtDelta.neg()
+      // amount the user deposited for the shares transferred out, based on the average amount they deposited for their
+      // total balance of shares
+      const realizedPnlInCollateral = equityDepositedForSharesInCollateral.neg()
+      const realizedPnlInDebt = equityDepositedForSharesInDebt.neg()
       const pnl = new ProfitAndLoss(0)
       pnl.position = fromPosition.id
       pnl.realizedInCollateral = realizedPnlInCollateral
