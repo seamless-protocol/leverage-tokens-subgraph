@@ -212,6 +212,8 @@ type Rebalance @entity(timeseries: true) {
     equityInCollateralAfter: BigInt!
     " Equity in debt asset of the LeverageToken after the rebalance "
     equityInDebtAfter: BigInt!
+    " The dutch auction take for this rebalance, if the rebalance is a dutch auction rebalance "
+    dutchAuctionTake: DutchAuctionRebalanceAdapterAuctionTake
     " The timestamp of the rebalance "
     timestamp: Timestamp!
     " The block number of the rebalance "
@@ -357,6 +359,8 @@ type DutchAuctionRebalanceAdapterAuctionTake @entity(timeseries: true) {
     amountIn: BigInt!
     " Amount out "
     amountOut: BigInt!
+    " The rebalance for this take "
+    rebalance: Rebalance
     " The timestamp the take was made "
     timestamp: Timestamp!
 }

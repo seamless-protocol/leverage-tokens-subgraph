@@ -33,7 +33,7 @@ import { ChainlinkAggregator as ChainlinkAggregatorTemplate } from "../generated
 import { RebalanceAdapter as RebalanceAdapterTemplate } from "../generated/templates"
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/LeverageManager/MorphoChainlinkOracleV2"
-import { Address, BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType, RebalanceActionType } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
@@ -220,6 +220,11 @@ export function handleRebalance(event: RebalanceEvent): void {
     return
   }
 
+  const rebalanceAdapter = RebalanceAdapter.load(leverageToken.rebalanceAdapter)
+  if (!rebalanceAdapter) {
+    return
+  }
+
   const oracle = Oracle.load(lendingAdapter.oracle)
   if (!oracle) {
     return
@@ -235,6 +240,24 @@ export function handleRebalance(event: RebalanceEvent): void {
   rebalance.equityInDebtAfter = event.params.stateAfter.equity
   rebalance.timestamp = event.block.timestamp.toI64()
   rebalance.blockNumber = event.block.number
+
+  // If the rebalance event corresponds to a dutch auction take, we attach references between them
+  const dutchAuctionRebalanceAdapter = rebalanceAdapter.dutchAuctionRebalanceAdapter ? DutchAuctionRebalanceAdapter.load(rebalanceAdapter.dutchAuctionRebalanceAdapter as Bytes) : null
+  const isDutchAuctionRebalance = event.params.sender.equals(Address.fromBytes(rebalanceAdapter.id)) && dutchAuctionRebalanceAdapter !== null
+  if (isDutchAuctionRebalance) {
+    const auctionHistory = (dutchAuctionRebalanceAdapter as DutchAuctionRebalanceAdapter).auctionHistory.load()
+    const latestAuction = auctionHistory.length > 0 ? auctionHistory[auctionHistory.length - 1] : null
+    const takeHistory = latestAuction ? latestAuction.auctionTakeHistory.load() : []
+    const latestTake = takeHistory.length > 0 ? takeHistory[takeHistory.length - 1] : null
+
+    if (latestTake && latestTake.timestamp == rebalance.timestamp && latestTake.rebalance == 0) {
+      latestTake.rebalance = rebalance.id
+      latestTake.save()
+
+      rebalance.dutchAuctionTake = latestTake.id
+    }
+  }
+
   rebalance.save()
 
   for (let i = 0; i < event.params.actions.length; i++) {
