@@ -53,20 +53,16 @@ export function handleAnswerUpdated(event: AnswerUpdatedEvent): void {
             priceUpdate.timestamp = event.block.timestamp.toI64()
             priceUpdate.save()
 
-            // Update equity for all LeverageTokens that use this oracle
-            const leverageTokens = leverageManager.leverageTokens.load()
-            const leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageManager.id))
-            for (let j = 0; j < leverageTokens.length; j++) {
-                const leverageToken = leverageTokens[j]
-                const lendingAdapter = LendingAdapter.load(leverageToken.lendingAdapter)
+            // Update state history for all LeverageTokens that use this oracle
+            const lendingAdapters = oracle.lendingAdapters.load()
+            for (let j = 0; j < lendingAdapters.length; j++) {
+                const lendingAdapter = lendingAdapters[j]
+                const leverageTokens = lendingAdapter.leverageTokens.load()
 
-                if (lendingAdapter === null) {
-                    continue
-                }
+                for (let k = 0; k < leverageTokens.length; k++) {
+                    const leverageToken = leverageTokens[k]
+                    const leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageManager.id))
 
-                if (lendingAdapter.oracle.equals(oracle.id)) {
-                    // We have to fetch the current equity on chain due to interest accrual potentially changing the current
-                    // amount of equity
                     const leverageTokenState = leverageManagerContract.getLeverageTokenState(
                         Address.fromBytes(leverageToken.id)
                     )
