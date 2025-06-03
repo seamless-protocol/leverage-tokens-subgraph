@@ -1,12 +1,12 @@
 {
   "base": {
     "LeverageManager": {
-      "address": "0x66dc1b08F8e19F81430b034218fce3dD7CF7F8E1",
-      "startBlock": 30750112
+      "address": "",
+      "startBlock": 0
     },
     "MorphoBlue": {
-      "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
-      "startBlock": 30750112
+      "address": "",
+      "startBlock": 0
     }
   }
 }
