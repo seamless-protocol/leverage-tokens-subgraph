@@ -338,8 +338,8 @@ type DutchAuctionRebalanceAdapterAuction @entity(immutable: false) {
     id: ID!
     " The dutch auction rebalance adapter that the auction is for "
     dutchAuctionRebalanceAdapter: DutchAuctionRebalanceAdapter!
-    " True if the auction is for an over-collateralized LeverageToken, false if it is for an under-collateralized LeverageToken "
-    isOverCollaterized: Boolean!
+    " The collateral ratio of the LeverageToken when the auction was created "
+    collateralRatioAtCreation: BigInt!
     " History of takes on this auction "
     auctionTakeHistory: [DutchAuctionRebalanceAdapterAuctionTake!]! @derivedFrom(field: "auction")
     " Timestamp the auction was created "

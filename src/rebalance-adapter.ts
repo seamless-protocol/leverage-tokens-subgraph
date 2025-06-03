@@ -1,15 +1,36 @@
-import { DutchAuctionRebalanceAdapterAuction, DutchAuctionRebalanceAdapterAuctionTake, DutchAuctionRebalanceAdapter, RebalanceAdapter } from "../generated/schema"
+import {
+  DutchAuctionRebalanceAdapterAuction,
+  DutchAuctionRebalanceAdapterAuctionTake,
+  DutchAuctionRebalanceAdapter,
+  RebalanceAdapter,
+  LeverageManager,
+  LeverageToken
+} from "../generated/schema"
 import {
   AuctionCreated as AuctionCreatedEvent,
   AuctionEnded as AuctionEndedEvent,
   Take as TakeEvent,
 } from "../generated/templates/RebalanceAdapter/RebalanceAdapter"
-import { BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import { DUTCH_AUCTION_PRICE_MULTIPLIER_PRECISION_STRING } from "./constants"
+import { LEVERAGE_MANAGER_ADDRESS } from "./constants/addresses"
+import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 
 export function handleAuctionCreated(event: AuctionCreatedEvent): void {
+  const leverageManager = LeverageManager.load(Address.fromHexString(LEVERAGE_MANAGER_ADDRESS))
+  if (!leverageManager) {
+    return
+  }
+
+  const leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageManager.id))
+
   const rebalanceAdapter = RebalanceAdapter.load(event.address)
   if (!rebalanceAdapter) {
+    return
+  }
+
+  const leverageToken = LeverageToken.load(rebalanceAdapter.leverageToken)
+  if (!leverageToken) {
     return
   }
 
@@ -27,9 +48,10 @@ export function handleAuctionCreated(event: AuctionCreatedEvent): void {
 
   const currentAuctionId = event.address.toHexString().concat("-").concat(dutchAuctionRebalanceAdapter.totalAuctions.toString())
   const currentAuction = new DutchAuctionRebalanceAdapterAuction(currentAuctionId)
+  const leverageTokenState = leverageManagerContract.getLeverageTokenState(Address.fromBytes(leverageToken.id))
   currentAuction.timestamp = event.block.timestamp.toI64()
   currentAuction.dutchAuctionRebalanceAdapter = dutchAuctionRebalanceAdapter.id
-  currentAuction.isOverCollaterized = event.params.auction.isOverCollateralized
+  currentAuction.collateralRatioAtCreation = leverageTokenState.collateralRatio
   currentAuction.save()
 
   dutchAuctionRebalanceAdapter._currentAuction = currentAuction.id

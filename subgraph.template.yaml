@@ -120,6 +120,8 @@ templates:
       abis:
         - name: RebalanceAdapter
           file: ./abis/RebalanceAdapter.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
       eventHandlers:
         - event: AuctionCreated((bool,uint120,uint120))
           handler: handleAuctionCreated
