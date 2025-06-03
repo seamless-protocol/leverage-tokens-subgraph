@@ -4,7 +4,7 @@ import {
   Transfer as TransferEvent,
 } from "../generated/templates/LeverageToken/LeverageToken"
 import { getPositionStub } from "./stubs"
-import { getPosition } from "./utils"
+import { convertToEquity, getPosition } from "./utils"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 import { convertDebtToCollateral } from "./utils"
 import { LeverageTokenBalanceChangeType } from "./constants"
@@ -43,18 +43,20 @@ export function handleTransfer(event: TransferEvent): void {
   let equityInCollateralDelta = BigInt.zero()
   let equityInDebtDelta = BigInt.zero()
 
+  const shares = event.params.value
+
   if (isMint) {
-    leverageToken.totalSupply = leverageToken.totalSupply.plus(event.params.value)
+    leverageToken.totalSupply = leverageToken.totalSupply.plus(shares)
   } else if (isBurn) {
-    leverageToken.totalSupply = leverageToken.totalSupply.minus(event.params.value)
+    leverageToken.totalSupply = leverageToken.totalSupply.minus(shares)
   } else {
     equityInCollateralDelta = calculateEquityForShares(
-      event.params.value,
+      shares,
       equityInCollateral,
       leverageToken.totalSupply
     )
     equityInDebtDelta = calculateEquityForShares(
-      event.params.value,
+      shares,
       equityInDebt,
       leverageToken.totalSupply
     )
@@ -67,12 +69,8 @@ export function handleTransfer(event: TransferEvent): void {
     }
 
     if (isTransfer) {
-      const equityDepositedForSharesInCollateral = event.params.value
-        .times(fromPosition.totalEquityDepositedInCollateral)
-        .div(fromPosition.balance)
-      const equityDepositedForSharesInDebt = event.params.value
-        .times(fromPosition.totalEquityDepositedInDebt)
-        .div(fromPosition.balance)
+      const equityDepositedForSharesInCollateral = convertToEquity(shares, fromPosition.totalEquityDepositedInCollateral, fromPosition.balance)
+      const equityDepositedForSharesInDebt = convertToEquity(shares, fromPosition.totalEquityDepositedInDebt, fromPosition.balance)
 
       // Realized pnl is calculated when LTs are transferred out from an account. The realized pnl loss is equal to the
       // amount the user deposited for the shares transferred out, based on the average amount they deposited for their
@@ -98,7 +96,7 @@ export function handleTransfer(event: TransferEvent): void {
       // This is because the shares are transferred out, and the pnl for them is now realized
       fromPosition.totalEquityDepositedInCollateral = fromPosition.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral);
       fromPosition.totalEquityDepositedInDebt = fromPosition.totalEquityDepositedInDebt.minus(equityDepositedForSharesInDebt)
-      fromPosition.balance = fromPosition.balance.minus(event.params.value);
+      fromPosition.balance = fromPosition.balance.minus(shares);
       fromPosition.save()
 
       const balanceChange = new LeverageTokenBalanceChange(0)
@@ -106,7 +104,7 @@ export function handleTransfer(event: TransferEvent): void {
       balanceChange.leverageToken = leverageToken.id
       balanceChange.timestamp = event.block.timestamp.toI64()
       balanceChange.blockNumber = event.block.number
-      balanceChange.amount = event.params.value.neg()
+      balanceChange.amount = shares.neg()
       balanceChange.equityInCollateral = equityInCollateralDelta.neg()
       balanceChange.equityInDebt = equityInDebtDelta.neg()
       balanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
@@ -131,13 +129,13 @@ export function handleTransfer(event: TransferEvent): void {
       toPosition = getPositionStub(Address.fromBytes(user.id), Address.fromBytes(leverageToken.id))
     }
 
-    if (toPosition.balance.isZero() && event.params.value.gt(BigInt.zero())) {
+    if (toPosition.balance.isZero() && shares.gt(BigInt.zero())) {
       leverageToken.totalHolders = leverageToken.totalHolders.plus(BigInt.fromI32(1))
       leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
     }
 
     if (isTransfer) {
-      toPosition.balance = toPosition.balance.plus(event.params.value);
+      toPosition.balance = toPosition.balance.plus(shares);
       toPosition.save()
 
       const balanceChange = new LeverageTokenBalanceChange(0)
@@ -145,7 +143,7 @@ export function handleTransfer(event: TransferEvent): void {
       balanceChange.leverageToken = leverageToken.id
       balanceChange.timestamp = event.block.timestamp.toI64()
       balanceChange.blockNumber = event.block.number
-      balanceChange.amount = event.params.value
+      balanceChange.amount = shares
       balanceChange.equityInCollateral = equityInCollateralDelta
       balanceChange.equityInDebt = equityInDebtDelta
       balanceChange.type = LeverageTokenBalanceChangeType.TRANSFER

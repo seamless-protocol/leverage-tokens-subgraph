@@ -42,6 +42,14 @@ export function calculateMorphoChainlinkPrice(
     return numerator.div(denominator)
 }
 
+export function convertToEquity(
+    shares: BigInt,
+    totalEquity: BigInt,
+    totalShares: BigInt
+): BigInt {
+    return shares.times(totalEquity).div(totalShares)
+}
+
 export function convertCollateralToDebt(
     oracle: Oracle,
     collateral: BigInt

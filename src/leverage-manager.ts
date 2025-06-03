@@ -30,7 +30,7 @@ import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../g
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
-import { calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
+import { convertToEquity, calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
 
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
@@ -231,8 +231,8 @@ export function handleRedeem(event: RedeemEvent): void {
   const equityRemovedInCollateral = event.params.actionData.equity
   const equityRemovedInDebt = convertCollateralToDebt(oracle, equityRemovedInCollateral)
 
-  const equityDepositedForSharesInCollateral = event.params.actionData.shares.times(position.totalEquityDepositedInCollateral).div(position.balance)
-  const equityDepositedForSharesInDebt = event.params.actionData.shares.times(position.totalEquityDepositedInDebt).div(position.balance)
+  const equityDepositedForSharesInCollateral = convertToEquity(event.params.actionData.shares, position.totalEquityDepositedInCollateral, position.balance)
+  const equityDepositedForSharesInDebt = convertToEquity(event.params.actionData.shares, position.totalEquityDepositedInDebt, position.balance)
 
   leverageToken.totalCollateral = leverageToken.totalCollateral.minus(event.params.actionData.collateral)
   leverageToken.totalCollateralInDebt = convertCollateralToDebt(oracle, leverageToken.totalCollateral)
