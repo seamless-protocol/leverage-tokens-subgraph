@@ -1,6 +1,11 @@
 enum LendingAdapterType {
     MORPHO
-    OTHER
+}
+
+enum LeverageTokenBalanceChangeType {
+    MINT
+    REDEEM
+    TRANSFER
 }
 
 enum RebalanceActionType {
@@ -10,31 +15,24 @@ enum RebalanceActionType {
     REPAY
 }
 
+enum OracleType {
+    MORPHO_CHAINLINK
+}
+
 type LeverageManager @entity(immutable: false) {
     " Address of the LeverageManager "
     id: Bytes!
-    " Admin address of the LeverageManager "
-    admin: Bytes!
-    " Fee manager role address of the LeverageManager "
-    feeManagerRole: Bytes!
-    " Treasury address of the LeverageManager "
-    treasury: Bytes!
-    " Mint treasury action fee of the LeverageManager "
-    mintTreasuryActionFee: BigInt!
-    " Redeem treasury action fee of the LeverageManager "
-    redeemTreasuryActionFee: BigInt!
-    " Default management fee at creation of LeverageTokens "
-    defaultManagementFeeAtCreation: BigInt!
-    " LeverageToken factory address of the LeverageManager "
-    leverageTokenFactory: Bytes!
     " All LeverageTokens managed by this LeverageManager "
     leverageTokens: [LeverageToken!]! @derivedFrom(field: "leverageManager")
     " Total number of LeverageTokens managed by this LeverageManager "
     leverageTokensCount: BigInt!
     " Asset stats for all LeverageTokens managed by this LeverageManager "
     assetStats: [LeverageManagerAssetStats!]! @derivedFrom(field: "leverageManager")
-    " Total number of unique LeverageToken holders across all LeverageTokens managed by this LeverageManager "
+    " Total number of current unique LeverageToken holders across all LeverageTokens managed by this LeverageManager "
     totalHolders: BigInt!
+
+    " The oracles used by LeverageTokens managed by this LeverageManager "
+    _oracles: [Oracle!]! @derivedFrom(field: "leverageManager")
 }
 
 type LeverageManagerAssetStats @entity(immutable: false) {
@@ -44,8 +42,6 @@ type LeverageManagerAssetStats @entity(immutable: false) {
     leverageManager: LeverageManager!
     " Total collateral of this asset managed by all LeverageTokens managed by this LeverageManager "
     totalCollateral: BigInt!
-    " Total debt of this asset managed by all LeverageTokens managed by this LeverageManager "
-    totalDebt: BigInt!
 }
 
 type LeverageToken @entity(immutable: false) {
@@ -55,23 +51,10 @@ type LeverageToken @entity(immutable: false) {
     id: Bytes!
     " The LeverageManager that manages this LeverageToken "
     leverageManager: LeverageManager!
-    " Name of the LeverageToken "
-    name: String!
-    " Symbol of the LeverageToken "
-    symbol: String!
     " The LendingAdapter used by this LeverageToken "
     lendingAdapter: LendingAdapter!
     " The RebalanceAdapter used by this LeverageToken "
     rebalanceAdapter: Bytes!
-
-    # ======== Fees ========
-
-    " Management fee for this LeverageToken "
-    managementFee: BigInt!
-    " Mint token action fee for this LeverageToken "
-    mintTokenActionFee: BigInt!
-    " Redeem token action fee for this LeverageToken "
-    redeemTokenActionFee: BigInt!
 
     # ======== Leverage Position Balances ========
 
@@ -82,15 +65,6 @@ type LeverageToken @entity(immutable: false) {
     totalCollateral: BigInt!
     " Current total collateral in debt asset across all positions "
     totalCollateralInDebt: BigInt!
-    " Current total debt across all positions "
-    totalDebt: BigInt!
-    " Current total debt in collateral asset across all positions "
-    totalDebtInCollateral: BigInt!
-
-    " Current total equity in collateral asset "
-    totalEquityInCollateral: BigInt!
-    " Current total equity in debt asset "
-    totalEquityInDebt: BigInt!
 
     " Current total supply of the LeverageToken "
     totalSupply: BigInt!
@@ -115,14 +89,12 @@ type LeverageToken @entity(immutable: false) {
 
     # ======== Historical Data ========
 
-    # " Historical equity updates "
-    equityUpdates: [EquityUpdate!]! @derivedFrom(field: "leverageToken")
-    " Historical mint events "
-    mints: [Mint!]! @derivedFrom(field: "leverageToken")
-    " Historical redeem events "
-    redeems: [Redeem!]! @derivedFrom(field: "leverageToken")
+    " Historical state updates "
+    stateHistory: [LeverageTokenState!]! @derivedFrom(field: "leverageToken")
+    " Historical balance changes "
+    balanceChangeHistory: [LeverageTokenBalanceChange!]! @derivedFrom(field: "leverageToken")
     # " Historical rebalances "
-    # rebalances: [Rebalance!]! @derivedFrom(field: "leverageToken")
+    # rebalanceHistory: [Rebalance!]! @derivedFrom(field: "leverageToken")
 
     # ======== Additional Metadata ========
 
@@ -135,7 +107,7 @@ type LeverageToken @entity(immutable: false) {
 type LendingAdapter @entity(immutable: true) {
     " Address of the LendingAdapter "
     id: Bytes!
-    " Type of the LendingAdapter (e.g., MORPHO, OTHER) "
+    " Type of the LendingAdapter (e.g., MORPHO) "
     type: LendingAdapterType!
     " Market ID of the LendingAdapter if type is MORPHO, null otherwise "
     morphoMarketId: Bytes
@@ -143,6 +115,10 @@ type LendingAdapter @entity(immutable: true) {
     collateralAsset: Bytes!
     " Address of the debt asset "
     debtAsset: Bytes!
+    " The oracle used by the LendingAdapter "
+    oracle: Oracle!
+    " The LeverageTokens using this LendingAdapter "
+    leverageTokens: [LeverageToken!]! @derivedFrom(field: "lendingAdapter")
 }
 
 type User @entity(immutable: false) {
@@ -161,77 +137,61 @@ type Position @entity(immutable: false) {
     leverageToken: LeverageToken!
     " Balance of the LeverageToken held by the user "
     balance: BigInt!
-    " Equity in collateral asset of the position "
-    equityInCollateral: BigInt!
-    " Equity in debt asset of the position "
-    equityInDebt: BigInt!
-    " Historical mints "
-    mints: [Mint!]! @derivedFrom(field: "position")
-    " Historical redeems "
-    redeems: [Redeem!]! @derivedFrom(field: "position")
-    " Historical equity updates "
-    equityUpdates: [PositionEquityUpdate!]! @derivedFrom(field: "position")
+    " Equity deposited by the user in collateral asset of the position for the balance (i.e. the amount without any pnl) "
+    totalEquityDepositedInCollateral: BigInt!
+    " Equity deposited by the user in debt asset of the position for the balance (i.e. the amount without any pnl) "
+    totalEquityDepositedInDebt: BigInt!
+    " Total realized pnl by the user in the position, in the collateral asset of the position "
+    realizedPnlInCollateral: BigInt!
+    " Total realized pnl by the user in the position, in the debt asset of the position "
+    realizedPnlInDebt: BigInt!
+    " Historical realized pnl data points "
+    realizedPnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
+    " Historical balance changes "
+    balanceChangeHistory: [LeverageTokenBalanceChange!]! @derivedFrom(field: "position")
 }
 
-type Mint @entity(timeseries: true) {
+type ProfitAndLoss @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
-    " Position that the mint is for "
+    " The position that the pnl data point is for "
     position: Position!
-    " Address of the LeverageToken "
-    leverageToken: LeverageToken!
-    " Amount of LeverageToken minted "
-    amount: BigInt!
-    " Collateral amount added to the position "
-    collateral: BigInt!
-    " Collateral amount added to the position in debt asset "
-    collateralInDebt: BigInt!
-    " Debt amount added to the position "
-    debt: BigInt!
-    " Debt amount added to the position in collateral asset "
-    debtInCollateral: BigInt!
-    " Equity amount added to the position in collateral asset "
-    equityInCollateral: BigInt!
-    " Equity amount added to the position in debt asset "
-    equityInDebt: BigInt!
-    " Token action fee for the mint "
-    tokenActionFee: BigInt!
-    " Treasury action fee for the mint "
-    treasuryActionFee: BigInt!
-    " Timestamp of the mint "
+    " The realized pnl in the collateral asset of the position "
+    realizedInCollateral: BigInt!
+    " The realized pnl in the debt asset of the position "
+    realizedInDebt: BigInt!
+    " The equity value of the shares that incurred the realized pnl, in the collateral asset of the position "
+    equityReceivedInCollateral: BigInt!
+    " The equity value of the shares that incurred the realized pnl, in the debt asset of the position "
+    equityReceivedInDebt: BigInt!
+    " The equity deposited for the shares at the time the user received them, in the collateral asset of the position "
+    equityDepositedInCollateral: BigInt!
+    " The equity deposited for the shares at the time the user received them, in the debt asset of the position "
+    equityDepositedInDebt: BigInt!
+    " The timestamp of this data point "
     timestamp: Timestamp!
-    " Block number of the mint "
+    " The block number of this data point "
     blockNumber: BigInt!
 }
 
-type Redeem @entity(timeseries: true) {
+type LeverageTokenBalanceChange @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
-    " Position that the redeem is for "
-    position: Position!
-    " Address of the LeverageToken "
+    " The LeverageToken that the balance change is for "
     leverageToken: LeverageToken!
-    " Amount of LeverageToken redeemed "
+    " The position that the balance is for "
+    position: Position!
+    " The type of balance change (MINT, REDEEM, TRANSFER) "
+    type: LeverageTokenBalanceChangeType!
+    " The balance added / removed to the position "
     amount: BigInt!
-    " Collateral amount removed from the position "
-    collateral: BigInt!
-    " Collateral amount removed from the position in debt asset "
-    collateralInDebt: BigInt!
-    " Debt amount removed from the position "
-    debt: BigInt!
-    " Debt amount removed from the position in collateral asset "
-    debtInCollateral: BigInt!
-    " Equity amount removed from the position in collateral asset "
+    " The equity value of the balance added / removed in collateral asset "
     equityInCollateral: BigInt!
-    " Equity amount removed from the position in debt asset "
+    " The equity value of the balance added / removed in debt asset "
     equityInDebt: BigInt!
-    " Token action fee for the redeem "
-    tokenActionFee: BigInt!
-    " Treasury action fee for the redeem "
-    treasuryActionFee: BigInt!
-    " Timestamp of the redeem "
+    " The timestamp of this data point "
     timestamp: Timestamp!
-    " Block number of the redeem "
+    " The block number of this data point "
     blockNumber: BigInt!
 }
 
@@ -268,24 +228,20 @@ type RebalanceAction @entity(immutable: true) {
     amount: BigInt!
 }
 
-type EquityUpdate @entity(timeseries: true) {
+type LeverageTokenState @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
-    " The LeverageToken that the equity update is for "
+    " The LeverageToken that the state is for "
     leverageToken: LeverageToken!
-    " The collateral ratio of the LeverageToken at the time of the update "
+    " The collateral ratio of the LeverageToken "
     collateralRatio: BigInt!
-    " The total collateral amount after this update "
+    " The total collateral amount in the LeverageToken "
     totalCollateral: BigInt!
-    " The total collateral in debt asset after this update "
-    totalCollateralInDebt: BigInt!
-    " The total debt amount after this update "
+    " The total debt amount in the LeverageToken "
     totalDebt: BigInt!
-    " The total debt in collateral asset after this update "
-    totalDebtInCollateral: BigInt!
-    " The total equity amount in collateral after this update "
+    " The total equity amount in collateral in the LeverageToken "
     totalEquityInCollateral: BigInt!
-    " The total equity amount in debt after this update "
+    " The total equity amount in debt in the LeverageToken "
     totalEquityInDebt: BigInt!
     " Timestamp of the update "
     timestamp: Timestamp!
@@ -293,17 +249,61 @@ type EquityUpdate @entity(timeseries: true) {
     blockNumber: BigInt!
 }
 
-type PositionEquityUpdate @entity(timeseries: true) {
+type Oracle @entity(immutable: true) {
+    " Address of the oracle "
+    id: Bytes!
+    " The LeverageManager that uses this oracle "
+    leverageManager: LeverageManager!
+    " The type of the oracle "
+    type: OracleType!
+    " The current price of the oracle "
+    price: BigInt!
+    " The decimals of the oracle price "
+    decimals: Int!
+    " The MorphoChainlinkOracle data, if oracle type is MORPHO_CHAINLINK "
+    morphoChainlinkOracleData: MorphoChainlinkOracleData
+    " The price updates for the oracle "
+    priceUpdates: [OraclePrice!]! @derivedFrom(field: "oracle")
+    " The LendingAdapters using this oracle "
+    lendingAdapters: [LendingAdapter!]! @derivedFrom(field: "oracle")
+}
+
+type OraclePrice @entity(timeseries: true) {
     " Auto-incremented timeseries data point ID "
     id: Int8!
-    " The position that the equity update is for "
-    position: Position!
-    " The equity amount in collateral asset of the position "
-    equityInCollateral: BigInt!
-    " The equity amount in debt asset of the position "
-    equityInDebt: BigInt!
-    " The timestamp of the equity update "
+    " The oracle that the price is for "
+    oracle: Oracle!
+    " The price of the oracle "
+    price: BigInt!
+    " The timestamp of the price "
     timestamp: Timestamp!
-    " The block number of the equity update "
-    blockNumber: BigInt!
+}
+
+type MorphoChainlinkOracleData @entity(immutable: true) {
+    id: Bytes!
+    " The oracle that the MorphoChainlinkOracleData is for "
+    oracle: Oracle!
+    " The scale factor of the MorphoChainlinkOracle "
+    scaleFactor: BigInt!
+    " The base vault address of the oracle "
+    baseVault: Bytes!
+    " The quote vault address of the oracle "
+    quoteVault: Bytes!
+    " The first base feed aggregator of the oracle "
+    baseAggregatorA: ChainlinkAggregator!
+    " The second base feed aggregator of the oracle "
+    baseAggregatorB: ChainlinkAggregator
+    " The first quote feed aggregator of the oracle "
+    quoteAggregatorA: ChainlinkAggregator
+    " The second quote feed aggregator of the oracle "
+    quoteAggregatorB: ChainlinkAggregator
+}
+
+type ChainlinkAggregator @entity(immutable: true) {
+    " Address of the Chainlink aggregator "
+    id: Bytes!
+    " The current price of the Chainlink aggregator "
+    price: BigInt!
+    " The decimals of the Chainlink aggregator price "
+    decimals: Int!
 }

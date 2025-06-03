@@ -3,15 +3,6 @@ import { LeverageManager, Position } from "../../generated/schema";
 
 export function getLeverageManagerStub(address: Address): LeverageManager {
     let leverageManager = new LeverageManager(address);
-    leverageManager.admin = Address.zero();
-    leverageManager.feeManagerRole = Address.zero();
-    leverageManager.treasury = Address.zero();
-
-    leverageManager.leverageTokenFactory = Address.zero();
-
-    leverageManager.mintTreasuryActionFee = BigInt.zero();
-    leverageManager.redeemTreasuryActionFee = BigInt.zero();
-    leverageManager.defaultManagementFeeAtCreation = BigInt.zero();
 
     leverageManager.totalHolders = BigInt.zero();
     leverageManager.leverageTokensCount = BigInt.zero();
@@ -31,7 +22,9 @@ export function getPositionStub(
     position.user = user;
     position.leverageToken = leverageToken;
     position.balance = BigInt.zero();
-    position.equityInCollateral = BigInt.zero();
-    position.equityInDebt = BigInt.zero();
+    position.totalEquityDepositedInCollateral = BigInt.zero();
+    position.totalEquityDepositedInDebt = BigInt.zero();
+    position.realizedPnlInCollateral = BigInt.zero();
+    position.realizedPnlInDebt = BigInt.zero();
     return position;
 }

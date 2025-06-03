@@ -16,36 +16,39 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
+        - ChainlinkAggregator
         - EquityUpdate
         - LendingAdapter
         - LeverageManager
         - LeverageToken
         - Mint
+        - MorphoChainlinkOracleData
+        - Oracle
         - Rebalance
         - RebalanceAction
         - Redeem
         - User
       abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+        - name: ChainlinkEACAggregatorProxy
+          file: ./abis/ChainlinkEACAggregatorProxy.json
         - name: LeverageManager
           file: ./abis/LeverageManager.json
         - name: LeverageToken
           file: ./abis/LeverageToken.json
         - name: MorphoLendingAdapter
           file: ./abis/MorphoLendingAdapter.json
+        - name: MorphoChainlinkOracleV2
+          file: ./abis/MorphoChainlinkOracleV2.json
       eventHandlers:
-        - event: DefaultManagementFeeAtCreationSet(uint256)
-          handler: handleDefaultManagementFeeAtCreationSet
         - event: LeverageManagerInitialized(address)
           handler: handleLeverageManagerInitialized
-        - event: LeverageTokenActionFeeSet(indexed address,indexed uint8,uint256)
-          handler: handleLeverageTokenActionFeeSet
         - event: LeverageTokenCreated(indexed
             address,address,address,(address,address,uint256,uint256))
           handler: handleLeverageTokenCreated
         - event: ManagementFeeCharged(indexed address,uint256)
           handler: handleManagementFeeCharged
-        - event: ManagementFeeSet(indexed address,uint256)
-          handler: handleManagementFeeSet
         - event: Mint(indexed address,indexed
             address,(uint256,uint256,uint256,uint256,uint256,uint256))
           handler: handleMint
@@ -54,16 +57,6 @@ dataSources:
         - event: Redeem(indexed address,indexed
             address,(uint256,uint256,uint256,uint256,uint256,uint256))
           handler: handleRedeem
-        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
-          handler: handleRoleAdminChanged
-        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
-          handler: handleRoleGranted
-        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
-          handler: handleRoleRevoked
-        - event: TreasuryActionFeeSet(indexed uint8,uint256)
-          handler: handleTreasuryActionFeeSet
-        - event: TreasurySet(address)
-          handler: handleTreasurySet
       file: ./src/leverage-manager.ts
   - kind: ethereum
     name: RebalanceAdapter
@@ -156,9 +149,32 @@ templates:
       abis:
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: LeverageToken
           file: ./abis/LeverageToken.json
+        - name: LendingAdapter
+          file: ./abis/LendingAdapter.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/leverage-token.ts
+  - name: ChainlinkAggregator
+    kind: ethereum/contract
+    network: base
+    source:
+      abi: ChainlinkAggregator
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - ChainlinkAggregator
+        - MorphoChainlinkOraclePrice
+      abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+      eventHandlers:
+        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+          handler: handleAnswerUpdated
+      file: ./src/chainlink-aggregator.ts
