@@ -1,42 +1,126 @@
 import {
+  DutchAuctionRebalanceAdapterAuction,
+  DutchAuctionRebalanceAdapterAuctionTake,
+  DutchAuctionRebalanceAdapter,
+  RebalanceAdapter,
+  LeverageManager,
+  LeverageToken
+} from "../generated/schema"
+import {
   AuctionCreated as AuctionCreatedEvent,
   AuctionEnded as AuctionEndedEvent,
-  CollateralRatiosRebalanceAdapterInitialized as CollateralRatiosRebalanceAdapterInitializedEvent,
-  DutchAuctionRebalanceAdapterInitialized as DutchAuctionRebalanceAdapterInitializedEvent,
-  LeverageTokenSet as LeverageTokenSetEvent,
-  PreLiquidationRebalanceAdapterInitialized as PreLiquidationRebalanceAdapterInitializedEvent,
-  RebalanceAdapterInitialized as RebalanceAdapterInitializedEvent,
   Take as TakeEvent,
-} from "../generated/RebalanceAdapter/RebalanceAdapter"
+} from "../generated/templates/RebalanceAdapter/RebalanceAdapter"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { DUTCH_AUCTION_PRICE_MULTIPLIER_PRECISION_STRING } from "./constants"
+import { LEVERAGE_MANAGER_ADDRESS } from "./constants/addresses"
+import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 
 export function handleAuctionCreated(event: AuctionCreatedEvent): void {
+  const leverageManager = LeverageManager.load(Address.fromHexString(LEVERAGE_MANAGER_ADDRESS))
+  if (!leverageManager) {
+    return
+  }
+
+  const leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageManager.id))
+
+  const rebalanceAdapter = RebalanceAdapter.load(event.address)
+  if (!rebalanceAdapter) {
+    return
+  }
+
+  const leverageToken = LeverageToken.load(rebalanceAdapter.leverageToken)
+  if (!leverageToken) {
+    return
+  }
+
+  if (!rebalanceAdapter.dutchAuctionRebalanceAdapter) {
+    return
+  }
+
+  const dutchAuctionRebalanceAdapter = DutchAuctionRebalanceAdapter.load(rebalanceAdapter.dutchAuctionRebalanceAdapter as Bytes)
+  if (!dutchAuctionRebalanceAdapter) {
+    return
+  }
+
+  dutchAuctionRebalanceAdapter.totalAuctions = dutchAuctionRebalanceAdapter.totalAuctions.plus(BigInt.fromI32(1))
+  dutchAuctionRebalanceAdapter.save()
+
+  const currentAuctionId = event.address.toHexString().concat("-").concat(dutchAuctionRebalanceAdapter.totalAuctions.toString())
+  const currentAuction = new DutchAuctionRebalanceAdapterAuction(currentAuctionId)
+  const leverageTokenState = leverageManagerContract.getLeverageTokenState(Address.fromBytes(leverageToken.id))
+  currentAuction.timestamp = event.block.timestamp.toI64()
+  currentAuction.dutchAuctionRebalanceAdapter = dutchAuctionRebalanceAdapter.id
+  currentAuction.collateralRatioAtCreation = leverageTokenState.collateralRatio
+  currentAuction.save()
+
+  dutchAuctionRebalanceAdapter._currentAuction = currentAuction.id
+  dutchAuctionRebalanceAdapter.save()
 }
 
 export function handleAuctionEnded(event: AuctionEndedEvent): void {
-}
+  const rebalanceAdapter = RebalanceAdapter.load(event.address)
+  if (!rebalanceAdapter) {
+    return
+  }
 
-export function handleCollateralRatiosRebalanceAdapterInitialized(
-  event: CollateralRatiosRebalanceAdapterInitializedEvent,
-): void {
-}
+  if (!rebalanceAdapter.dutchAuctionRebalanceAdapter) {
+    return
+  }
 
-export function handleDutchAuctionRebalanceAdapterInitialized(
-  event: DutchAuctionRebalanceAdapterInitializedEvent,
-): void {
-}
+  const dutchAuctionRebalanceAdapter = DutchAuctionRebalanceAdapter.load(rebalanceAdapter.dutchAuctionRebalanceAdapter as Bytes)
+  if (!dutchAuctionRebalanceAdapter) {
+    return
+  }
 
-export function handleLeverageTokenSet(event: LeverageTokenSetEvent): void {
-}
+  if (!dutchAuctionRebalanceAdapter._currentAuction) {
+    return
+  }
 
-export function handlePreLiquidationRebalanceAdapterInitialized(
-  event: PreLiquidationRebalanceAdapterInitializedEvent,
-): void {
-}
+  const currentAuction = DutchAuctionRebalanceAdapterAuction.load(dutchAuctionRebalanceAdapter._currentAuction as string)
+  if (!currentAuction) {
+    return
+  }
 
-export function handleRebalanceAdapterInitialized(
-  event: RebalanceAdapterInitializedEvent,
-): void {
+  const maxDuration = dutchAuctionRebalanceAdapter.maxDuration.toI64()
+  const duration = event.block.timestamp.minus(BigInt.fromI64(currentAuction.timestamp)).toI64()
+  currentAuction.timestampCompleted = duration < maxDuration ? event.block.timestamp.toI64() : currentAuction.timestamp + maxDuration
+  currentAuction.save()
+
+  dutchAuctionRebalanceAdapter._currentAuction = null
+  dutchAuctionRebalanceAdapter.save()
 }
 
 export function handleTake(event: TakeEvent): void {
+  const rebalanceAdapter = RebalanceAdapter.load(event.address)
+  if (!rebalanceAdapter) {
+    return
+  }
+
+  if (!rebalanceAdapter.dutchAuctionRebalanceAdapter) {
+    return
+  }
+
+  const dutchAuctionRebalanceAdapter = DutchAuctionRebalanceAdapter.load(rebalanceAdapter.dutchAuctionRebalanceAdapter as Bytes)
+  if (!dutchAuctionRebalanceAdapter) {
+    return
+  }
+
+  if (!dutchAuctionRebalanceAdapter._currentAuction) {
+    return
+  }
+
+  const currentAuction = DutchAuctionRebalanceAdapterAuction.load(dutchAuctionRebalanceAdapter._currentAuction as string)
+  if (!currentAuction) {
+    return
+  }
+
+  // The id for timeseries is autogenerated; even if we set it to a real value, it is silently overwritten
+  const dutchAuctionRebalanceAdapterAuctionTake = new DutchAuctionRebalanceAdapterAuctionTake(0)
+  dutchAuctionRebalanceAdapterAuctionTake.auction = currentAuction.id
+  dutchAuctionRebalanceAdapterAuctionTake.priceMultiplier = event.params.amountOut.times(BigInt.fromString(DUTCH_AUCTION_PRICE_MULTIPLIER_PRECISION_STRING)).div(event.params.amountIn)
+  dutchAuctionRebalanceAdapterAuctionTake.amountIn = event.params.amountIn
+  dutchAuctionRebalanceAdapterAuctionTake.amountOut = event.params.amountOut
+  dutchAuctionRebalanceAdapterAuctionTake.timestamp = event.block.timestamp.toI64()
+  dutchAuctionRebalanceAdapterAuctionTake.save()
 }

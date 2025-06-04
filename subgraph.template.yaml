@@ -41,6 +41,8 @@ dataSources:
           file: ./abis/MorphoLendingAdapter.json
         - name: MorphoChainlinkOracleV2
           file: ./abis/MorphoChainlinkOracleV2.json
+        - name: RebalanceAdapter
+          file: ./abis/RebalanceAdapter.json
       eventHandlers:
         - event: LeverageManagerInitialized(address)
           handler: handleLeverageManagerInitialized
@@ -58,39 +60,6 @@ dataSources:
             address,(uint256,uint256,uint256,uint256,uint256,uint256))
           handler: handleRedeem
       file: ./src/leverage-manager.ts
-  - kind: ethereum
-    name: RebalanceAdapter
-    network: base
-    source:
-      address: "{{base.RebalanceAdapter.address}}"
-      abi: RebalanceAdapter
-      startBlock: {{base.RebalanceAdapter.startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.9
-      language: wasm/assemblyscript
-      entities: []
-      abis:
-        - name: RebalanceAdapter
-          file: ./abis/RebalanceAdapter.json
-      eventHandlers:
-        - event: AuctionCreated((bool,uint120,uint120))
-          handler: handleAuctionCreated
-        - event: AuctionEnded()
-          handler: handleAuctionEnded
-        - event: CollateralRatiosRebalanceAdapterInitialized(uint256,uint256,uint256)
-          handler: handleCollateralRatiosRebalanceAdapterInitialized
-        - event: DutchAuctionRebalanceAdapterInitialized(uint256,uint256,uint256)
-          handler: handleDutchAuctionRebalanceAdapterInitialized
-        - event: LeverageTokenSet(address)
-          handler: handleLeverageTokenSet
-        - event: PreLiquidationRebalanceAdapterInitialized(uint256,uint256)
-          handler: handlePreLiquidationRebalanceAdapterInitialized
-        - event: RebalanceAdapterInitialized(indexed address,indexed address)
-          handler: handleRebalanceAdapterInitialized
-        - event: Take(indexed address,uint256,uint256)
-          handler: handleTake
-      file: ./src/rebalance-adapter.ts
   #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
   # - kind: ethereum
   #   name: MorphoBlue
@@ -181,3 +150,28 @@ templates:
         - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
           handler: handleAnswerUpdated
       file: ./src/chainlink-aggregator.ts
+  - name: RebalanceAdapter
+    kind: ethereum/contract
+    network: base
+    source:
+      abi: RebalanceAdapter
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - RebalanceAdapter
+        - DutchAuctionRebalanceAdapterData
+      abis:
+        - name: RebalanceAdapter
+          file: ./abis/RebalanceAdapter.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
+      eventHandlers:
+        - event: AuctionCreated((bool,uint120,uint120))
+          handler: handleAuctionCreated
+        - event: AuctionEnded()
+          handler: handleAuctionEnded
+        - event: Take(indexed address,uint256,uint256)
+          handler: handleTake
+      file: ./src/rebalance-adapter.ts

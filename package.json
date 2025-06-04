@@ -3,6 +3,7 @@
   "license": "MIT",
   "scripts": {
     "generate-manifest": "mustache ./networks.json ./subgraph.template.yaml > ./subgraph.yaml",
+    "generate-addresses": "mustache ./networks.json ./addresses.template.ts > ./src/constants/addresses.ts",
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ leverage-tokens-subgraph",
