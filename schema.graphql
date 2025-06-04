@@ -249,7 +249,7 @@ type LeverageTokenState @entity(timeseries: true) {
     blockNumber: BigInt!
 }
 
-type Oracle @entity(immutable: true) {
+type Oracle @entity(immutable: false) {
     " Address of the oracle "
     id: Bytes!
     " The LeverageManager that uses this oracle "
@@ -299,7 +299,7 @@ type MorphoChainlinkOracleData @entity(immutable: true) {
     quoteAggregatorB: ChainlinkAggregator
 }
 
-type ChainlinkAggregator @entity(immutable: true) {
+type ChainlinkAggregator @entity(immutable: false) {
     " Address of the Chainlink aggregator "
     id: Bytes!
     " The current price of the Chainlink aggregator "

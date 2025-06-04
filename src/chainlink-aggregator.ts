@@ -1,5 +1,5 @@
 import { Address, Bytes } from "@graphprotocol/graph-ts";
-import { ChainlinkAggregator, LendingAdapter, LeverageManager, LeverageTokenState, MorphoChainlinkOracleData, OraclePrice } from "../generated/schema"
+import { ChainlinkAggregator, LeverageManager, LeverageTokenState, MorphoChainlinkOracleData, OraclePrice } from "../generated/schema"
 import { LEVERAGE_MANAGER_ADDRESS } from "./constants/addresses";
 import { AnswerUpdated as AnswerUpdatedEvent } from "../generated/templates/ChainlinkAggregator/ChainlinkAggregator";
 import { OracleType } from "./constants";
@@ -25,7 +25,8 @@ export function handleAnswerUpdated(event: AnswerUpdatedEvent): void {
   for (let i = 0; i < oracles.length; i++) {
     const oracle = oracles[i]
 
-    if (oracle.type === OracleType.MORPHO_CHAINLINK) {
+    // We need to use == here instead of ===, as === stricly compares the references, not the actual values
+    if (oracle.type == OracleType.MORPHO_CHAINLINK) {
         const morphoChainlinkOracleDataId = oracle.morphoChainlinkOracleData
         if (morphoChainlinkOracleDataId === null) {
             return
