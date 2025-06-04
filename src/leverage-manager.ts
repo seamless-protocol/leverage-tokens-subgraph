@@ -243,7 +243,7 @@ export function handleRebalance(event: RebalanceEvent): void {
 
   // If the rebalance event corresponds to a dutch auction take, we attach references between them
   const dutchAuctionRebalanceAdapter = rebalanceAdapter.dutchAuctionRebalanceAdapter ? DutchAuctionRebalanceAdapter.load(rebalanceAdapter.dutchAuctionRebalanceAdapter as Bytes) : null
-  const isDutchAuctionRebalance = event.params.sender.equals(Address.fromBytes(rebalanceAdapter.id)) && dutchAuctionRebalanceAdapter !== null
+  const isDutchAuctionRebalance = event.params.sender.equals(Address.fromBytes(rebalanceAdapter.id)) && dutchAuctionRebalanceAdapter != null
   if (isDutchAuctionRebalance) {
     const auctionHistory = (dutchAuctionRebalanceAdapter as DutchAuctionRebalanceAdapter).auctionHistory.load()
     const latestAuction = auctionHistory.length > 0 ? auctionHistory[auctionHistory.length - 1] : null
