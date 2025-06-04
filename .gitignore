@@ -38,3 +38,6 @@ data
 
 # Manifest should be generated with templating, not committed
 subgraph.yaml
+
+# Address constants file should be generated with templating, not committed
+src/constants/addresses.ts

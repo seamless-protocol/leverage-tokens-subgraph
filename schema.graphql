@@ -54,7 +54,7 @@ type LeverageToken @entity(immutable: false) {
     " The LendingAdapter used by this LeverageToken "
     lendingAdapter: LendingAdapter!
     " The RebalanceAdapter used by this LeverageToken "
-    rebalanceAdapter: Bytes!
+    rebalanceAdapter: RebalanceAdapter!
 
     # ======== Leverage Position Balances ========
 
@@ -93,8 +93,8 @@ type LeverageToken @entity(immutable: false) {
     stateHistory: [LeverageTokenState!]! @derivedFrom(field: "leverageToken")
     " Historical balance changes "
     balanceChangeHistory: [LeverageTokenBalanceChange!]! @derivedFrom(field: "leverageToken")
-    # " Historical rebalances "
-    # rebalanceHistory: [Rebalance!]! @derivedFrom(field: "leverageToken")
+    " Historical rebalances "
+    rebalanceHistory: [Rebalance!]! @derivedFrom(field: "leverageToken")
 
     # ======== Additional Metadata ========
 
@@ -201,7 +201,7 @@ type Rebalance @entity(timeseries: true) {
     " The LeverageToken that the rebalance is for "
     leverageToken: LeverageToken!
     " Rebalance actions "
-    actions: [RebalanceAction!]!
+    actions: [RebalanceAction!]! @derivedFrom(field: "rebalance")
     " Collateral ratio before the rebalance "
     collateralRatioBefore: BigInt!
     " Collateral ratio after the rebalance "
@@ -214,6 +214,8 @@ type Rebalance @entity(timeseries: true) {
     equityInCollateralAfter: BigInt!
     " Equity in debt asset of the LeverageToken after the rebalance "
     equityInDebtAfter: BigInt!
+    " The dutch auction take for this rebalance, if the rebalance is a dutch auction rebalance "
+    dutchAuctionTake: DutchAuctionRebalanceAdapterAuctionTake
     " The timestamp of the rebalance "
     timestamp: Timestamp!
     " The block number of the rebalance "
@@ -221,11 +223,14 @@ type Rebalance @entity(timeseries: true) {
 }
 
 type RebalanceAction @entity(immutable: true) {
-    id: Bytes!
+    " {Rebalance address}-{Action Index in Rebalance event} "
+    id: ID!
     " The type of rebalance action "
     type: RebalanceActionType!
     " The amount of collateral or debt added or removed, depending on the action type "
     amount: BigInt!
+    " The rebalance that the action is for "
+    rebalance: Rebalance!
 }
 
 type LeverageTokenState @entity(timeseries: true) {
@@ -306,4 +311,60 @@ type ChainlinkAggregator @entity(immutable: true) {
     price: BigInt!
     " The decimals of the Chainlink aggregator price "
     decimals: Int!
+}
+
+type RebalanceAdapter @entity(immutable: false) {
+    " The address of the rebalance adapter "
+    id: Bytes!
+    " The LeverageToken that the rebalance adapter is for "
+    leverageToken: LeverageToken!
+    " The dutch auction rebalance adapter data, if the rebalance adapter is using DutchAuctionRebalanceAdapter "
+    dutchAuctionRebalanceAdapter: DutchAuctionRebalanceAdapter
+}
+
+type DutchAuctionRebalanceAdapter @entity(immutable: false) {
+    " The address of the rebalance adapter "
+    id: Bytes!
+    " The rebalance adapter that the dutch auction rebalance adapter is for "
+    rebalanceAdapter: RebalanceAdapter!
+    " History of auctions "
+    auctionHistory: [DutchAuctionRebalanceAdapterAuction!]! @derivedFrom(field: "dutchAuctionRebalanceAdapter")
+    " The maximum duration allowed for auctions "
+    maxDuration: BigInt!
+    " The total number of auctions that have happened "
+    totalAuctions: BigInt!
+    " The current on-going auction, if there is one. Note: This is only updated when the auction is updated on chain, so it may not be accurate in real time if the max duration has elapsed "
+    _currentAuction: DutchAuctionRebalanceAdapterAuction
+}
+
+type DutchAuctionRebalanceAdapterAuction @entity(immutable: false) {
+    " {RebalanceAdapter address}-{Auction Number} "
+    id: ID!
+    " The dutch auction rebalance adapter that the auction is for "
+    dutchAuctionRebalanceAdapter: DutchAuctionRebalanceAdapter!
+    " The collateral ratio of the LeverageToken when the auction was created "
+    collateralRatioAtCreation: BigInt!
+    " History of takes on this auction "
+    auctionTakeHistory: [DutchAuctionRebalanceAdapterAuctionTake!]! @derivedFrom(field: "auction")
+    " Timestamp the auction was created "
+    timestamp: Timestamp!
+    " Timestamp the auction was completed, null if not yet ended "
+    timestampCompleted: Timestamp
+}
+
+type DutchAuctionRebalanceAdapterAuctionTake @entity(timeseries: true) {
+    " Auto-incremented timeseries data point ID "
+    id: Int8!
+    " The auction that the take is for "
+    auction: DutchAuctionRebalanceAdapterAuction!
+    " Price multiplier taken on the auction "
+    priceMultiplier: BigInt!
+    " Amount in "
+    amountIn: BigInt!
+    " Amount out "
+    amountOut: BigInt!
+    " The rebalance for this take "
+    rebalance: Rebalance
+    " The timestamp the take was made "
+    timestamp: Timestamp!
 }

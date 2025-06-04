@@ -8,5 +8,11 @@ The subgraph manifest is generated from the [subgraph.template.yaml](./subgraph.
 npm run generate-manifest
 ```
 
+Additionally, some addresses from [networks.json](./networks.json) are needed in the event handler logic. To generate the necessary address constants file, execute:
+
+```bash
+npm run generate-addresses
+```
+
 For testing, [Tenderly Virtual Testnets](https://docs.tenderly.co/virtual-testnets/develop/thegraph) are recommended.
 
