@@ -21,6 +21,8 @@ export const MORPHO_ORACLE_PRICE_DECIMALS = 36;
 
 export const MORPHO_ORACLE_PRICE_SCALE_STRING = "1000000000000000000000000000000000000";
 
+export const WAD_STRING = "1000000000000000000"
+
 export function RebalanceActionType(value: i32): string {
   if (value == 0) return "ADD_COLLATERAL";
   if (value == 1) return "REMOVE_COLLATERAL";

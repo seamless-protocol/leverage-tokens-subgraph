@@ -248,6 +248,12 @@ type LeverageTokenState @entity(timeseries: true) {
     totalEquityInCollateral: BigInt!
     " The total equity amount in debt in the LeverageToken "
     totalEquityInDebt: BigInt!
+    " The total supply of the LeverageToken "
+    totalSupply: BigInt!
+    " The equity value per LeverageToken in collateral "
+    equityPerTokenInCollateral: BigInt!
+    " The equity value per LeverageToken in debt "
+    equityPerTokenInDebt: BigInt!
     " Timestamp of the update "
     timestamp: Timestamp!
     " Block number of the update "

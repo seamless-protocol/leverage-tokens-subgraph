@@ -47,7 +47,7 @@ export function convertToEquity(
     totalEquity: BigInt,
     totalShares: BigInt
 ): BigInt {
-    return shares.times(totalEquity).div(totalShares)
+    return totalShares.isZero() ? BigInt.fromI32(0) : shares.times(totalEquity).div(totalShares)
 }
 
 export function convertCollateralToDebt(
