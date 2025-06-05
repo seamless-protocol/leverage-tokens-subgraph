@@ -183,8 +183,10 @@ type LeverageTokenBalanceChange @entity(timeseries: true) {
     position: Position!
     " The type of balance change (MINT, REDEEM, TRANSFER) "
     type: LeverageTokenBalanceChangeType!
-    " The balance added / removed to the position "
+    " The amount of shares held in the position with the change "
     amount: BigInt!
+    " The balance added / removed to the position "
+    amountDelta: BigInt!
     " The equity value of the balance added / removed in collateral asset "
     equityInCollateral: BigInt!
     " The equity value of the balance added / removed in debt asset "

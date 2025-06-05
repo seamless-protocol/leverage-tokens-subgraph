@@ -183,7 +183,8 @@ export function handleMint(event: MintEvent): void {
   const balanceUpdate = new LeverageTokenBalanceChange(0)
   balanceUpdate.position = position.id
   balanceUpdate.leverageToken = leverageToken.id
-  balanceUpdate.amount = event.params.actionData.shares
+  balanceUpdate.amount = position.balance
+  balanceUpdate.amountDelta = event.params.actionData.shares
   balanceUpdate.equityInCollateral = equityAddedInCollateral
   balanceUpdate.equityInDebt = equityAddedInDebt
   balanceUpdate.timestamp = event.block.timestamp.toI64()
@@ -362,7 +363,8 @@ export function handleRedeem(event: RedeemEvent): void {
   const balanceUpdate = new LeverageTokenBalanceChange(0)
   balanceUpdate.position = position.id
   balanceUpdate.leverageToken = leverageToken.id
-  balanceUpdate.amount = event.params.actionData.shares.neg()
+  balanceUpdate.amount = position.balance
+  balanceUpdate.amountDelta = event.params.actionData.shares.neg()
   balanceUpdate.equityInCollateral = equityRemovedInCollateral.neg()
   balanceUpdate.equityInDebt = equityRemovedInDebt.neg()
   balanceUpdate.timestamp = event.block.timestamp.toI64()
