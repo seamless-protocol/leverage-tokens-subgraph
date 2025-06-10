@@ -104,7 +104,8 @@ export function handleTransfer(event: TransferEvent): void {
       balanceChange.leverageToken = leverageToken.id
       balanceChange.timestamp = event.block.timestamp.toI64()
       balanceChange.blockNumber = event.block.number
-      balanceChange.amount = shares.neg()
+      balanceChange.amount = fromPosition.balance
+      balanceChange.amountDelta = shares.neg()
       balanceChange.equityInCollateral = equityInCollateralDelta.neg()
       balanceChange.equityInDebt = equityInDebtDelta.neg()
       balanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
@@ -143,7 +144,8 @@ export function handleTransfer(event: TransferEvent): void {
       balanceChange.leverageToken = leverageToken.id
       balanceChange.timestamp = event.block.timestamp.toI64()
       balanceChange.blockNumber = event.block.number
-      balanceChange.amount = shares
+      balanceChange.amount = toPosition.balance
+      balanceChange.amountDelta = shares
       balanceChange.equityInCollateral = equityInCollateralDelta
       balanceChange.equityInDebt = equityInDebtDelta
       balanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
