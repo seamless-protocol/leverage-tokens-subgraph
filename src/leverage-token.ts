@@ -1,5 +1,5 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { LendingAdapter, LeverageManager, LeverageToken, LeverageTokenBalanceChange, Oracle, ProfitAndLoss, User } from "../generated/schema"
+import { LendingAdapter, LeverageManager, LeverageToken, LeverageTokenBalanceChange, Oracle, User } from "../generated/schema"
 import {
   Transfer as TransferEvent,
 } from "../generated/templates/LeverageToken/LeverageToken"
@@ -76,26 +76,6 @@ export function handleTransfer(event: TransferEvent): void {
     const equityDepositedForSharesInDebt = convertToEquity(shares, fromPosition.totalEquityDepositedInDebt, fromPosition.balance)
 
     if (!isLeverageRouterMint && !isLeverageRouterRedeem) {
-      // Realized pnl is calculated when LTs are transferred out from an account. The realized pnl loss is equal to the
-      // amount the user deposited for the shares transferred out, based on the average amount they deposited for their
-      // total balance of shares
-      const realizedPnlInCollateral = equityDepositedForSharesInCollateral.neg()
-      const realizedPnlInDebt = equityDepositedForSharesInDebt.neg()
-      const pnl = new ProfitAndLoss(0)
-      pnl.position = fromPosition.id
-      pnl.realizedInCollateral = realizedPnlInCollateral
-      pnl.realizedInDebt = realizedPnlInDebt
-      pnl.equityReceivedInCollateral = BigInt.zero()
-      pnl.equityReceivedInDebt = BigInt.zero()
-      pnl.equityDepositedInCollateral = equityDepositedForSharesInCollateral
-      pnl.equityDepositedInDebt = equityDepositedForSharesInDebt
-      pnl.timestamp = event.block.timestamp.toI64()
-      pnl.blockNumber = event.block.number
-      pnl.save()
-
-      // Realized pnl is negative so this decreases
-      fromPosition.realizedPnlInCollateral = fromPosition.realizedPnlInCollateral.plus(realizedPnlInCollateral)
-      fromPosition.realizedPnlInDebt = fromPosition.realizedPnlInDebt.plus(realizedPnlInDebt)
       // The total equity deposited by the user is decreased by the equity deposited for the shares transferred
       // This is because the shares are transferred out, and the pnl for them is now realized
       fromPosition.totalEquityDepositedInCollateral = fromPosition.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral);
@@ -112,6 +92,8 @@ export function handleTransfer(event: TransferEvent): void {
       fromBalanceChange.amountDelta = shares.neg()
       fromBalanceChange.equityInCollateral = equityInCollateralDelta.neg()
       fromBalanceChange.equityInDebt = equityInDebtDelta.neg()
+      fromBalanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
+      fromBalanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
       fromBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
       fromBalanceChange.save()
 
@@ -148,6 +130,8 @@ export function handleTransfer(event: TransferEvent): void {
       toBalanceChange.amountDelta = shares
       toBalanceChange.equityInCollateral = equityInCollateralDelta
       toBalanceChange.equityInDebt = equityInDebtDelta
+      toBalanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
+      toBalanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
       toBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
       toBalanceChange.save()
     } else if (isLeverageRouterMint) {
@@ -181,6 +165,8 @@ export function handleTransfer(event: TransferEvent): void {
       balanceChange.amountDelta = shares
       balanceChange.equityInCollateral = equityInCollateralDelta
       balanceChange.equityInDebt = equityInDebtDelta
+      balanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
+      balanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
       balanceChange.type = LeverageTokenBalanceChangeType.MINT
       balanceChange.save()
     } else if (isLeverageRouterRedeem) {
@@ -194,22 +180,8 @@ export function handleTransfer(event: TransferEvent): void {
         return
       }
 
-      const pnl = new ProfitAndLoss(0)
-      pnl.position = fromPosition.id
-      pnl.realizedInCollateral = equityInCollateralDelta.minus(equityDepositedForSharesInCollateral)
-      pnl.realizedInDebt = equityInDebtDelta.minus(equityDepositedForSharesInDebt)
-      pnl.equityReceivedInCollateral = equityInCollateralDelta
-      pnl.equityReceivedInDebt = equityInDebtDelta
-      pnl.equityDepositedInCollateral = equityDepositedForSharesInCollateral
-      pnl.equityDepositedInDebt = equityDepositedForSharesInDebt
-      pnl.timestamp = event.block.timestamp.toI64()
-      pnl.blockNumber = event.block.number
-      pnl.save()
-
       fromPosition.totalEquityDepositedInCollateral = fromPosition.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral)
       fromPosition.totalEquityDepositedInDebt = fromPosition.totalEquityDepositedInDebt.minus(equityDepositedForSharesInDebt)
-      fromPosition.realizedPnlInCollateral = fromPosition.realizedPnlInCollateral.plus(pnl.realizedInCollateral)
-      fromPosition.realizedPnlInDebt = fromPosition.realizedPnlInDebt.plus(pnl.realizedInDebt)
       fromPosition.balance = fromPosition.balance.minus(shares)
       fromPosition.save()
 
@@ -227,6 +199,8 @@ export function handleTransfer(event: TransferEvent): void {
       balanceChange.amountDelta = shares.neg()
       balanceChange.equityInCollateral = equityInCollateralDelta.neg()
       balanceChange.equityInDebt = equityInDebtDelta.neg()
+      balanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
+      balanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
       balanceChange.type = LeverageTokenBalanceChangeType.REDEEM
       balanceChange.save()
     }

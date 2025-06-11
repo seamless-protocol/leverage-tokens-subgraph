@@ -141,37 +141,8 @@ type Position @entity(immutable: false) {
     totalEquityDepositedInCollateral: BigInt!
     " Equity deposited by the user in debt asset of the position for the balance (i.e. the amount without any pnl) "
     totalEquityDepositedInDebt: BigInt!
-    " Total realized pnl by the user in the position, in the collateral asset of the position "
-    realizedPnlInCollateral: BigInt!
-    " Total realized pnl by the user in the position, in the debt asset of the position "
-    realizedPnlInDebt: BigInt!
-    " Historical realized pnl data points "
-    realizedPnlHistory: [ProfitAndLoss!]! @derivedFrom(field: "position")
     " Historical balance changes "
     balanceChangeHistory: [LeverageTokenBalanceChange!]! @derivedFrom(field: "position")
-}
-
-type ProfitAndLoss @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
-    " The position that the pnl data point is for "
-    position: Position!
-    " The realized pnl in the collateral asset of the position "
-    realizedInCollateral: BigInt!
-    " The realized pnl in the debt asset of the position "
-    realizedInDebt: BigInt!
-    " The equity value of the shares that incurred the realized pnl, in the collateral asset of the position "
-    equityReceivedInCollateral: BigInt!
-    " The equity value of the shares that incurred the realized pnl, in the debt asset of the position "
-    equityReceivedInDebt: BigInt!
-    " The equity deposited for the shares at the time the user received them, in the collateral asset of the position "
-    equityDepositedInCollateral: BigInt!
-    " The equity deposited for the shares at the time the user received them, in the debt asset of the position "
-    equityDepositedInDebt: BigInt!
-    " The timestamp of this data point "
-    timestamp: Timestamp!
-    " The block number of this data point "
-    blockNumber: BigInt!
 }
 
 type LeverageTokenBalanceChange @entity(timeseries: true) {
@@ -191,6 +162,10 @@ type LeverageTokenBalanceChange @entity(timeseries: true) {
     equityInCollateral: BigInt!
     " The equity value of the balance added / removed in debt asset "
     equityInDebt: BigInt!
+    " The amount the user deposited for the shares in the collateral asset "
+    equityDepositedInCollateral: BigInt!
+    " The amount the user deposited for the shares in the debt asset "
+    equityDepositedInDebt: BigInt!
     " The timestamp of this data point "
     timestamp: Timestamp!
     " The block number of this data point "
