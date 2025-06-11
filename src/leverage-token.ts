@@ -230,22 +230,6 @@ export function handleTransfer(event: TransferEvent): void {
       balanceChange.type = LeverageTokenBalanceChangeType.REDEEM
       balanceChange.save()
     }
-  } else if (isMint) {
-    let user = User.load(event.params.to)
-    if (!user) {
-      user = new User(event.params.to)
-      user.save()
-    }
-
-    let toPosition = getPosition(event.params.to, Address.fromBytes(leverageToken.id))
-    if (!toPosition) {
-      toPosition = getPositionStub(Address.fromBytes(user.id), Address.fromBytes(leverageToken.id))
-    }
-
-    if (toPosition.balance.isZero() && shares.gt(BigInt.zero())) {
-      leverageToken.totalHolders = leverageToken.totalHolders.plus(BigInt.fromI32(1))
-      leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
-    }
   }
 
   leverageToken.save()

@@ -151,9 +151,10 @@ export function handleMint(event: MintEvent): void {
     return
   }
 
-  const user = User.load(event.params.sender)
+  let user = User.load(event.params.sender)
   if (!user) {
-    return
+    user = new User(event.params.sender)
+    user.save()
   }
 
   const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
@@ -165,6 +166,13 @@ export function handleMint(event: MintEvent): void {
   if (!position) {
     position = getPositionStub(event.params.sender, Address.fromBytes(leverageToken.id))
   }
+
+  if (position.balance.isZero() && event.params.actionData.shares.gt(BigInt.zero())) {
+    leverageToken.totalHolders = leverageToken.totalHolders.plus(BigInt.fromI32(1))
+    leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
+    leverageManager.save()
+  }
+
   position.balance = position.balance.plus(event.params.actionData.shares)
 
   // The total equity deposit fields are running totals of the equity deposited for the balance of the position.
