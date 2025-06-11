@@ -185,6 +185,7 @@ export function handleMint(event: MintEvent): void {
   leverageToken.totalMintTokenActionFees = leverageToken.totalMintTokenActionFees.plus(event.params.actionData.tokenFee)
   leverageToken.totalMintTreasuryFees = leverageToken.totalMintTreasuryFees.plus(event.params.actionData.treasuryFee)
   leverageToken.collateralRatio = leverageTokenState.collateralRatio
+  leverageToken.totalSupply = leverageToken.totalSupply.plus(event.params.actionData.shares)
   leverageToken.save()
 
   const balanceUpdate = new LeverageTokenBalanceChange(0)
@@ -345,6 +346,7 @@ export function handleRedeem(event: RedeemEvent): void {
   leverageToken.totalRedeemTokenActionFees = leverageToken.totalRedeemTokenActionFees.plus(event.params.actionData.tokenFee)
   leverageToken.totalRedeemTreasuryFees = leverageToken.totalRedeemTreasuryFees.plus(event.params.actionData.treasuryFee)
   leverageToken.collateralRatio = leverageTokenState.collateralRatio
+  leverageToken.totalSupply = leverageToken.totalSupply.minus(event.params.actionData.shares)
   leverageToken.save()
 
   position.balance = position.balance.minus(event.params.actionData.shares)
