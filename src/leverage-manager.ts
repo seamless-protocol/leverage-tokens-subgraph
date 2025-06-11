@@ -8,7 +8,6 @@ import {
   Oracle,
   MorphoChainlinkOracleData,
   ChainlinkAggregator,
-  ProfitAndLoss,
   LeverageTokenBalanceChange,
   OraclePrice,
   RebalanceAdapter,
@@ -151,9 +150,10 @@ export function handleMint(event: MintEvent): void {
     return
   }
 
-  const user = User.load(event.params.sender)
+  let user = User.load(event.params.sender)
   if (!user) {
-    return
+    user = new User(event.params.sender)
+    user.save()
   }
 
   const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
@@ -165,6 +165,13 @@ export function handleMint(event: MintEvent): void {
   if (!position) {
     position = getPositionStub(event.params.sender, Address.fromBytes(leverageToken.id))
   }
+
+  if (position.balance.isZero() && event.params.actionData.shares.gt(BigInt.zero())) {
+    leverageToken.totalHolders = leverageToken.totalHolders.plus(BigInt.fromI32(1))
+    leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
+    leverageManager.save()
+  }
+
   position.balance = position.balance.plus(event.params.actionData.shares)
 
   // The total equity deposit fields are running totals of the equity deposited for the balance of the position.
@@ -178,6 +185,7 @@ export function handleMint(event: MintEvent): void {
   leverageToken.totalMintTokenActionFees = leverageToken.totalMintTokenActionFees.plus(event.params.actionData.tokenFee)
   leverageToken.totalMintTreasuryFees = leverageToken.totalMintTreasuryFees.plus(event.params.actionData.treasuryFee)
   leverageToken.collateralRatio = leverageTokenState.collateralRatio
+  leverageToken.totalSupply = leverageToken.totalSupply.plus(event.params.actionData.shares)
   leverageToken.save()
 
   const balanceUpdate = new LeverageTokenBalanceChange(0)
@@ -187,6 +195,8 @@ export function handleMint(event: MintEvent): void {
   balanceUpdate.amountDelta = event.params.actionData.shares
   balanceUpdate.equityInCollateral = equityAddedInCollateral
   balanceUpdate.equityInDebt = equityAddedInDebt
+  balanceUpdate.equityDepositedInCollateral = equityAddedInCollateral
+  balanceUpdate.equityDepositedInDebt = equityAddedInDebt
   balanceUpdate.timestamp = event.block.timestamp.toI64()
   balanceUpdate.blockNumber = event.block.number
   balanceUpdate.type = LeverageTokenBalanceChangeType.MINT
@@ -331,33 +341,24 @@ export function handleRedeem(event: RedeemEvent): void {
   const equityDepositedForSharesInCollateral = convertToEquity(event.params.actionData.shares, position.totalEquityDepositedInCollateral, position.balance)
   const equityDepositedForSharesInDebt = convertToEquity(event.params.actionData.shares, position.totalEquityDepositedInDebt, position.balance)
 
+  position.balance = position.balance.minus(event.params.actionData.shares)
+  position.totalEquityDepositedInCollateral = position.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral)
+  position.totalEquityDepositedInDebt = position.totalEquityDepositedInDebt.minus(equityDepositedForSharesInDebt)
+  position.save()
+
+  if (position.balance.isZero() && event.params.actionData.shares.gt(BigInt.zero())) {
+    leverageToken.totalHolders = leverageToken.totalHolders.minus(BigInt.fromI32(1))
+    leverageManager.totalHolders = leverageManager.totalHolders.minus(BigInt.fromI32(1))
+    leverageManager.save()
+  }
+
   leverageToken.totalCollateral = leverageToken.totalCollateral.minus(event.params.actionData.collateral)
   leverageToken.totalCollateralInDebt = convertCollateralToDebt(oracle, leverageToken.totalCollateral)
   leverageToken.totalRedeemTokenActionFees = leverageToken.totalRedeemTokenActionFees.plus(event.params.actionData.tokenFee)
   leverageToken.totalRedeemTreasuryFees = leverageToken.totalRedeemTreasuryFees.plus(event.params.actionData.treasuryFee)
   leverageToken.collateralRatio = leverageTokenState.collateralRatio
+  leverageToken.totalSupply = leverageToken.totalSupply.minus(event.params.actionData.shares)
   leverageToken.save()
-
-  // Realized pnl is calculated when LTs are redeemed. To calculate the realized pnl on the redeem, we calculate the
-  // difference between the equity value of the LT shares, and the equity the user deposited for the shares
-  const pnl = new ProfitAndLoss(0)
-  pnl.position = position.id
-  pnl.realizedInCollateral = equityRemovedInCollateral.minus(equityDepositedForSharesInCollateral)
-  pnl.realizedInDebt = equityRemovedInDebt.minus(equityDepositedForSharesInDebt)
-  pnl.equityReceivedInCollateral = equityRemovedInCollateral
-  pnl.equityReceivedInDebt = equityRemovedInDebt
-  pnl.equityDepositedInCollateral = equityDepositedForSharesInCollateral
-  pnl.equityDepositedInDebt = equityDepositedForSharesInDebt
-  pnl.timestamp = event.block.timestamp.toI64()
-  pnl.blockNumber = event.block.number
-  pnl.save()
-
-  position.balance = position.balance.minus(event.params.actionData.shares)
-  position.totalEquityDepositedInCollateral = position.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral)
-  position.totalEquityDepositedInDebt = position.totalEquityDepositedInDebt.minus(equityDepositedForSharesInDebt)
-  position.realizedPnlInCollateral = position.realizedPnlInCollateral.plus(pnl.realizedInCollateral)
-  position.realizedPnlInDebt = position.realizedPnlInDebt.plus(pnl.realizedInDebt)
-  position.save()
 
   // The id for timeseries is autogenerated; even if we set it to a real value, it is silently overwritten
   const balanceUpdate = new LeverageTokenBalanceChange(0)
@@ -367,6 +368,8 @@ export function handleRedeem(event: RedeemEvent): void {
   balanceUpdate.amountDelta = event.params.actionData.shares.neg()
   balanceUpdate.equityInCollateral = equityRemovedInCollateral.neg()
   balanceUpdate.equityInDebt = equityRemovedInDebt.neg()
+  balanceUpdate.equityDepositedInCollateral = equityDepositedForSharesInCollateral.neg()
+  balanceUpdate.equityDepositedInDebt = equityDepositedForSharesInDebt.neg()
   balanceUpdate.timestamp = event.block.timestamp.toI64()
   balanceUpdate.blockNumber = event.block.number
   balanceUpdate.type = LeverageTokenBalanceChangeType.REDEEM

@@ -24,7 +24,5 @@ export function getPositionStub(
     position.balance = BigInt.zero();
     position.totalEquityDepositedInCollateral = BigInt.zero();
     position.totalEquityDepositedInDebt = BigInt.zero();
-    position.realizedPnlInCollateral = BigInt.zero();
-    position.realizedPnlInDebt = BigInt.zero();
     return position;
 }
