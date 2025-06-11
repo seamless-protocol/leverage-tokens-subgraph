@@ -8,7 +8,6 @@ import { convertToEquity, getPosition } from "./utils"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 import { convertDebtToCollateral } from "./utils"
 import { LeverageTokenBalanceChangeType } from "./constants"
-import { LEVERAGE_MANAGER_ADDRESS, LEVERAGE_ROUTER_ADDRESS } from "./constants/addresses"
 
 export function handleTransfer(event: TransferEvent): void {
   const leverageToken = LeverageToken.load(event.address)
@@ -40,8 +39,6 @@ export function handleTransfer(event: TransferEvent): void {
 
   const isBurn = event.params.to.equals(Address.zero())
   const isMint = event.params.from.equals(Address.zero())
-  const isLeverageRouterMint = event.params.from == Address.fromString(LEVERAGE_ROUTER_ADDRESS) && event.params.to != Address.fromString(LEVERAGE_MANAGER_ADDRESS)
-  const isLeverageRouterRedeem = event.params.to == Address.fromString(LEVERAGE_ROUTER_ADDRESS) && event.params.from != Address.fromString(LEVERAGE_MANAGER_ADDRESS)
   const isTransfer = !isBurn && !isMint
 
   let equityInCollateralDelta = BigInt.zero()
@@ -66,6 +63,7 @@ export function handleTransfer(event: TransferEvent): void {
     )
   }
 
+  // handleMint and handleRedeem in leverage-manager.ts update positions and balance history, so we only handle transfers here
   if (isTransfer) {
     const fromPosition = getPosition(event.params.from, Address.fromBytes(leverageToken.id))
     if (!fromPosition) {
@@ -75,151 +73,67 @@ export function handleTransfer(event: TransferEvent): void {
     const equityDepositedForSharesInCollateral = convertToEquity(shares, fromPosition.totalEquityDepositedInCollateral, fromPosition.balance)
     const equityDepositedForSharesInDebt = convertToEquity(shares, fromPosition.totalEquityDepositedInDebt, fromPosition.balance)
 
-    if (!isLeverageRouterMint && !isLeverageRouterRedeem) {
-      // The total equity deposited by the user is decreased by the equity deposited for the shares transferred
-      // This is because the shares are transferred out, and the pnl for them is now realized
-      fromPosition.totalEquityDepositedInCollateral = fromPosition.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral);
-      fromPosition.totalEquityDepositedInDebt = fromPosition.totalEquityDepositedInDebt.minus(equityDepositedForSharesInDebt)
-      fromPosition.balance = fromPosition.balance.minus(shares);
-      fromPosition.save()
+    // The total equity deposited by the user is decreased by the equity deposited for the shares transferred
+    // This is because the shares are transferred out, so the pnl for them is now realized
+    fromPosition.totalEquityDepositedInCollateral = fromPosition.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral);
+    fromPosition.totalEquityDepositedInDebt = fromPosition.totalEquityDepositedInDebt.minus(equityDepositedForSharesInDebt)
+    fromPosition.balance = fromPosition.balance.minus(shares);
+    fromPosition.save()
 
-      const fromBalanceChange = new LeverageTokenBalanceChange(0)
-      fromBalanceChange.position = fromPosition.id
-      fromBalanceChange.leverageToken = leverageToken.id
-      fromBalanceChange.timestamp = event.block.timestamp.toI64()
-      fromBalanceChange.blockNumber = event.block.number
-      fromBalanceChange.amount = fromPosition.balance
-      fromBalanceChange.amountDelta = shares.neg()
-      fromBalanceChange.equityInCollateral = equityInCollateralDelta.neg()
-      fromBalanceChange.equityInDebt = equityInDebtDelta.neg()
-      fromBalanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
-      fromBalanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
-      fromBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
-      fromBalanceChange.save()
+    const fromBalanceChange = new LeverageTokenBalanceChange(0)
+    fromBalanceChange.position = fromPosition.id
+    fromBalanceChange.leverageToken = leverageToken.id
+    fromBalanceChange.timestamp = event.block.timestamp.toI64()
+    fromBalanceChange.blockNumber = event.block.number
+    fromBalanceChange.amount = fromPosition.balance
+    fromBalanceChange.amountDelta = shares.neg()
+    fromBalanceChange.equityInCollateral = equityInCollateralDelta.neg()
+    fromBalanceChange.equityInDebt = equityInDebtDelta.neg()
+    fromBalanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral.neg()
+    fromBalanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt.neg()
+    fromBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
+    fromBalanceChange.save()
 
-      if (fromPosition.balance.isZero()) {
-        leverageToken.totalHolders = leverageToken.totalHolders.minus(BigInt.fromI32(1))
-        leverageManager.totalHolders = leverageManager.totalHolders.minus(BigInt.fromI32(1))
-      }
-
-      let toUser = User.load(event.params.to)
-      if (!toUser) {
-        toUser = new User(event.params.to)
-        toUser.save()
-      }
-
-      let toPosition = getPosition(event.params.to, Address.fromBytes(leverageToken.id))
-      if (!toPosition) {
-        toPosition = getPositionStub(Address.fromBytes(toUser.id), Address.fromBytes(leverageToken.id))
-      }
-
-      if (toPosition.balance.isZero() && shares.gt(BigInt.zero())) {
-        leverageToken.totalHolders = leverageToken.totalHolders.plus(BigInt.fromI32(1))
-        leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
-      }
-
-      toPosition.balance = toPosition.balance.plus(shares);
-      toPosition.save()
-
-      const toBalanceChange = new LeverageTokenBalanceChange(0)
-      toBalanceChange.position = toPosition.id
-      toBalanceChange.leverageToken = leverageToken.id
-      toBalanceChange.timestamp = event.block.timestamp.toI64()
-      toBalanceChange.blockNumber = event.block.number
-      toBalanceChange.amount = toPosition.balance
-      toBalanceChange.amountDelta = shares
-      toBalanceChange.equityInCollateral = equityInCollateralDelta
-      toBalanceChange.equityInDebt = equityInDebtDelta
-      toBalanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
-      toBalanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
-      toBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
-      toBalanceChange.save()
-    } else if (isLeverageRouterMint) {
-      let toUser = User.load(event.params.to)
-      if (!toUser) {
-        toUser = new User(event.params.to)
-        toUser.save()
-      }
-
-      let toPosition = getPosition(event.params.to, Address.fromBytes(leverageToken.id))
-      if (!toPosition) {
-        toPosition = getPositionStub(Address.fromBytes(toUser.id), Address.fromBytes(leverageToken.id))
-      }
-
-      if (toPosition.balance.isZero() && shares.gt(BigInt.zero())) {
-        leverageToken.totalHolders = leverageToken.totalHolders.plus(BigInt.fromI32(1))
-        leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
-      }
-
-      toPosition.balance = toPosition.balance.plus(shares);
-      toPosition.totalEquityDepositedInCollateral = toPosition.totalEquityDepositedInCollateral.plus(equityInCollateralDelta)
-      toPosition.totalEquityDepositedInDebt = toPosition.totalEquityDepositedInDebt.plus(equityInDebtDelta)
-      toPosition.save()
-
-      const balanceChange = new LeverageTokenBalanceChange(0)
-      balanceChange.position = toPosition.id
-      balanceChange.leverageToken = leverageToken.id
-      balanceChange.timestamp = event.block.timestamp.toI64()
-      balanceChange.blockNumber = event.block.number
-      balanceChange.amount = toPosition.balance
-      balanceChange.amountDelta = shares
-      balanceChange.equityInCollateral = equityInCollateralDelta
-      balanceChange.equityInDebt = equityInDebtDelta
-      balanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
-      balanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
-      balanceChange.type = LeverageTokenBalanceChangeType.MINT
-      balanceChange.save()
-    } else if (isLeverageRouterRedeem) {
-      let fromUser = User.load(event.params.from)
-      if (!fromUser) {
-        return
-      }
-
-      let fromPosition = getPosition(event.params.from, Address.fromBytes(leverageToken.id))
-      if (!fromPosition) {
-        return
-      }
-
-      fromPosition.totalEquityDepositedInCollateral = fromPosition.totalEquityDepositedInCollateral.minus(equityDepositedForSharesInCollateral)
-      fromPosition.totalEquityDepositedInDebt = fromPosition.totalEquityDepositedInDebt.minus(equityDepositedForSharesInDebt)
-      fromPosition.balance = fromPosition.balance.minus(shares)
-      fromPosition.save()
-
-      if (fromPosition.balance.minus(shares).isZero()) {
-        leverageToken.totalHolders = leverageToken.totalHolders.minus(BigInt.fromI32(1))
-        leverageManager.totalHolders = leverageManager.totalHolders.minus(BigInt.fromI32(1))
-      }
-
-      const balanceChange = new LeverageTokenBalanceChange(0)
-      balanceChange.position = fromPosition.id
-      balanceChange.leverageToken = leverageToken.id
-      balanceChange.timestamp = event.block.timestamp.toI64()
-      balanceChange.blockNumber = event.block.number
-      balanceChange.amount = fromPosition.balance
-      balanceChange.amountDelta = shares.neg()
-      balanceChange.equityInCollateral = equityInCollateralDelta.neg()
-      balanceChange.equityInDebt = equityInDebtDelta.neg()
-      balanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
-      balanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
-      balanceChange.type = LeverageTokenBalanceChangeType.REDEEM
-      balanceChange.save()
+    if (fromPosition.balance.isZero()) {
+      leverageToken.totalHolders = leverageToken.totalHolders.minus(BigInt.fromI32(1))
+      leverageManager.totalHolders = leverageManager.totalHolders.minus(BigInt.fromI32(1))
     }
-  } else if (isMint) {
-    let user = User.load(event.params.to)
-    if (!user) {
-      user = new User(event.params.to)
-      user.save()
+
+    let toUser = User.load(event.params.to)
+    if (!toUser) {
+      toUser = new User(event.params.to)
+      toUser.save()
     }
 
     let toPosition = getPosition(event.params.to, Address.fromBytes(leverageToken.id))
     if (!toPosition) {
-      toPosition = getPositionStub(Address.fromBytes(user.id), Address.fromBytes(leverageToken.id))
+      toPosition = getPositionStub(Address.fromBytes(toUser.id), Address.fromBytes(leverageToken.id))
     }
 
     if (toPosition.balance.isZero() && shares.gt(BigInt.zero())) {
       leverageToken.totalHolders = leverageToken.totalHolders.plus(BigInt.fromI32(1))
       leverageManager.totalHolders = leverageManager.totalHolders.plus(BigInt.fromI32(1))
     }
+
+    // The receiver of the shares has their cost basis increased by the value of the shares at the time they are received
+    toPosition.totalEquityDepositedInCollateral = toPosition.totalEquityDepositedInCollateral.plus(equityInCollateralDelta)
+    toPosition.totalEquityDepositedInDebt = toPosition.totalEquityDepositedInDebt.plus(equityInDebtDelta)
+    toPosition.balance = toPosition.balance.plus(shares);
+    toPosition.save()
+
+    const toBalanceChange = new LeverageTokenBalanceChange(0)
+    toBalanceChange.position = toPosition.id
+    toBalanceChange.leverageToken = leverageToken.id
+    toBalanceChange.timestamp = event.block.timestamp.toI64()
+    toBalanceChange.blockNumber = event.block.number
+    toBalanceChange.amount = toPosition.balance
+    toBalanceChange.amountDelta = shares
+    toBalanceChange.equityInCollateral = equityInCollateralDelta
+    toBalanceChange.equityInDebt = equityInDebtDelta
+    toBalanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral
+    toBalanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt
+    toBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
+    toBalanceChange.save()
   }
 
   leverageToken.save()
