@@ -200,7 +200,7 @@ type Rebalance @entity(timeseries: true) {
 }
 
 type RebalanceAction @entity(immutable: true) {
-    " {Rebalance address}-{Action Index in Rebalance event} "
+    " {LeverageToken address}-{Rebalance index}-{Action index in Rebalance event} "
     id: ID!
     " The type of rebalance action "
     type: RebalanceActionType!

@@ -284,10 +284,11 @@ export function handleRebalance(event: RebalanceEvent): void {
 
   rebalance.save()
 
+  const leverageTokenRebalanceHistoryLength = leverageToken.rebalanceHistory.load().length;
   for (let i = 0; i < event.params.actions.length; i++) {
     const actionData = event.params.actions[i]
 
-    const action = new RebalanceAction(`${rebalance.id}-${i}`)
+    const action = new RebalanceAction(`${leverageToken.id}-${leverageTokenRebalanceHistoryLength}-${i}`)
     action.type = RebalanceActionType(actionData.actionType)
     action.amount = actionData.amount
     action.rebalance = rebalance.id
