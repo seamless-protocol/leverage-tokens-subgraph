@@ -158,7 +158,8 @@ export function handleMint(event: MintEvent): void {
 
   const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
 
-  const equityAddedInCollateral = event.params.actionData.equity
+  const debtAddedInCollateral = convertDebtToCollateral(oracle, event.params.actionData.debt)
+  const equityAddedInCollateral = event.params.actionData.collateral > debtAddedInCollateral ? event.params.actionData.collateral.minus(debtAddedInCollateral) : BigInt.zero()
   const equityAddedInDebt = convertCollateralToDebt(oracle, equityAddedInCollateral)
 
   let position = getPosition(event.params.sender, Address.fromBytes(leverageToken.id))
@@ -336,7 +337,8 @@ export function handleRedeem(event: RedeemEvent): void {
 
   const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
 
-  const equityRemovedInCollateral = event.params.actionData.equity
+  const debtRemovedInCollateral = convertDebtToCollateral(oracle, event.params.actionData.debt)
+  const equityRemovedInCollateral = event.params.actionData.collateral > debtRemovedInCollateral ? event.params.actionData.collateral.minus(debtRemovedInCollateral) : BigInt.zero()
   const equityRemovedInDebt = convertCollateralToDebt(oracle, equityRemovedInCollateral)
 
   const equityDepositedForSharesInCollateral = convertToEquity(event.params.actionData.shares, position.totalEquityDepositedInCollateral, position.balance)
