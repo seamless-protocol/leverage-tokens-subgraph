@@ -51,13 +51,11 @@ dataSources:
           handler: handleLeverageTokenCreated
         - event: ManagementFeeCharged(indexed address,uint256)
           handler: handleManagementFeeCharged
-        - event: Mint(indexed address,indexed
-            address,(uint256,uint256,uint256,uint256,uint256,uint256))
+        - event: Mint(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
           handler: handleMint
         - event: Rebalance(indexed address,indexed address,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256),(uint8,uint256)[])
           handler: handleRebalance
-        - event: Redeem(indexed address,indexed
-            address,(uint256,uint256,uint256,uint256,uint256,uint256))
+        - event: Redeem(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
           handler: handleRedeem
       file: ./src/leverage-manager.ts
   #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
