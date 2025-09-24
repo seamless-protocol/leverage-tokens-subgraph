@@ -2,7 +2,7 @@
 
 ## Development
 
-The subgraph manifest is generated from the subgraph.template.yaml [templates](./templates) template using [mustache](https://www.npmjs.com/package/mustache). To generate the manifest, update the configuration in [networks.json](./networks.json) and then execute `npm run generate-manifest-<chain>`, e.g.:
+The subgraph manifest is generated from the `subgraph.template.yaml` [templates](./templates) using [mustache](https://www.npmjs.com/package/mustache). To generate the manifest, update the configuration in [networks.json](./networks.json) for the desired chain and then execute `npm run generate-manifest-<chain>`, e.g.:
 
 ```bash
 npm run generate-manifest-ethereum
