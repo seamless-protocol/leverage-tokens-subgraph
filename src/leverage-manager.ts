@@ -444,41 +444,41 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       }
       oracle.morphoChainlinkOracleData = morphoChainlinkOracleData.id
 
-      // Only BASE_FEED_1 must be defined, the other feeds are optional
-      const baseFeedA = ChainlinkEACAggregatorProxyContract.bind(morphoChainlinkOracleContract.BASE_FEED_1())
+      const baseFeedA = morphoChainlinkOracleContract.BASE_FEED_1()
       const baseFeedBAddress = morphoChainlinkOracleContract.BASE_FEED_2()
       const quoteFeedAAddress = morphoChainlinkOracleContract.QUOTE_FEED_1()
       const quoteFeedBAddress = morphoChainlinkOracleContract.QUOTE_FEED_2()
-      const aggregatorContracts = [
-        ChainlinkAggregatorContract.bind(baseFeedA.aggregator()),
-        baseFeedBAddress.notEqual(Address.zero())
-          ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(baseFeedBAddress).aggregator())
-          : null,
-        quoteFeedAAddress.notEqual(Address.zero())
-          ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(quoteFeedAAddress).aggregator())
-          : null,
-        quoteFeedBAddress.notEqual(Address.zero())
-          ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(quoteFeedBAddress).aggregator())
-          : null
-      ]
+
+      const feeds = [baseFeedA, baseFeedBAddress, quoteFeedAAddress, quoteFeedBAddress];
+
+      // Most feeds will have a separate aggregator contract, but some may not
+      // e.g. https://etherscan.io/address/0xbDd2F2D473E8D63d1BFb0185B5bDB8046ca48a72#readContract
+      const feedsWithAggregators = feeds.map<Address>((feed) => {
+        const aggregatorResult = ChainlinkEACAggregatorProxyContract.bind(feed).try_aggregator()
+        if (aggregatorResult.reverted) {
+          return feed
+        }
+        return aggregatorResult.value
+      })
 
       morphoChainlinkOracleData.baseVault = morphoChainlinkOracleContract.BASE_VAULT()
       morphoChainlinkOracleData.quoteVault = morphoChainlinkOracleContract.QUOTE_VAULT()
       morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
 
-      for (let i = 0; i < aggregatorContracts.length; i++) {
-        const aggregatorContract = aggregatorContracts[i]
-        if (aggregatorContract === null) {
+      for (let i = 0; i < feedsWithAggregators.length; i++) {
+        const aggregatorAddress = feeds[i]
+        if (aggregatorAddress.equals(Address.zero())) {
           continue
         }
 
+        const aggregatorContract = ChainlinkAggregatorContract.bind(aggregatorAddress)
         let aggregator = ChainlinkAggregator.load(aggregatorContract._address)
         if (!aggregator) {
           ChainlinkAggregatorTemplate.create(aggregatorContract._address)
           aggregator = new ChainlinkAggregator(aggregatorContract._address)
 
-          const latestRoundData = aggregatorContract.latestRoundData()
           const decimals = aggregatorContract.decimals()
+          const latestRoundData = aggregatorContract.latestRoundData()
 
           aggregator.price = latestRoundData.getAnswer()
           aggregator.decimals = decimals
