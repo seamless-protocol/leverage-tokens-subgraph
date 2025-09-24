@@ -138,6 +138,5 @@ export function handleTake(event: TakeEvent): void {
     dutchAuctionRebalanceAdapterAuctionTake.rebalance = mostRecentRebalance.id
   }
 
-
   dutchAuctionRebalanceAdapterAuctionTake.save()
 }

@@ -255,8 +255,7 @@ export function handleRebalance(event: RebalanceEvent): void {
     return
   }
 
-  const rebalanceId = event.transaction.hash.toString().concat("-").concat(event.logIndex.toString())
-  const rebalance = new Rebalance(rebalanceId)
+  const rebalance = new Rebalance(`${event.transaction.hash.toHexString()}-${event.logIndex.toString()}`)
   rebalance.leverageToken = leverageToken.id
   rebalance.collateralRatioBefore = event.params.stateBefore.collateralRatio
   rebalance.collateralRatioAfter = event.params.stateAfter.collateralRatio
@@ -272,10 +271,10 @@ export function handleRebalance(event: RebalanceEvent): void {
   for (let i = 0; i < event.params.actions.length; i++) {
     const actionData = event.params.actions[i]
 
-    const action = new RebalanceAction(`${leverageToken.id}-${leverageTokenRebalanceHistoryLength}-${i}`)
+    const action = new RebalanceAction(`${leverageToken.id.toHexString()}-${leverageTokenRebalanceHistoryLength}-${i}`)
     action.type = RebalanceActionType(actionData.actionType)
     action.amount = actionData.amount
-    action.rebalance = rebalanceId
+    action.rebalance = rebalance.id
     action.save()
   }
 }
