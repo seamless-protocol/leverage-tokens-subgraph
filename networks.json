@@ -1,4 +1,10 @@
 {
+  "ethereum": {
+    "LeverageManager": {
+      "address": "",
+      "startBlock": 0
+    }
+  },
   "base": {
     "LeverageManager": {
       "address": "",

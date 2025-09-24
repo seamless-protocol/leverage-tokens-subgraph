@@ -2,8 +2,10 @@
   "name": "leverage-tokens-subgraph",
   "license": "MIT",
   "scripts": {
-    "generate-manifest": "mustache ./networks.json ./subgraph.template.yaml > ./subgraph.yaml",
-    "generate-addresses": "mustache ./networks.json ./addresses.template.ts > ./src/constants/addresses.ts",
+    "generate-manifest-base": "mustache ./networks.json ./templates/8453/subgraph.template.yaml > ./subgraph.yaml",
+    "generate-manifest-ethereum": "mustache ./networks.json ./templates/1/subgraph.template.yaml > ./subgraph.yaml",
+    "generate-addresses-base": "mustache ./networks.json ./templates/8453/addresses.template.ts > ./src/constants/addresses.ts",
+    "generate-addresses-ethereum": "mustache ./networks.json ./templates/1/addresses.template.ts > ./src/constants/addresses.ts",
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ leverage-tokens-subgraph",

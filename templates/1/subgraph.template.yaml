@@ -1,0 +1,175 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: LeverageManager
+    network: mainnet
+    source:
+      address: "{{ethereum.LeverageManager.address}}"
+      abi: LeverageManager
+      startBlock: {{ethereum.LeverageManager.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - ChainlinkAggregator
+        - EquityUpdate
+        - LendingAdapter
+        - LeverageManager
+        - LeverageToken
+        - Mint
+        - MorphoChainlinkOracleData
+        - Oracle
+        - Rebalance
+        - RebalanceAction
+        - Redeem
+        - User
+      abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+        - name: ChainlinkEACAggregatorProxy
+          file: ./abis/ChainlinkEACAggregatorProxy.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
+        - name: LeverageToken
+          file: ./abis/LeverageToken.json
+        - name: MorphoLendingAdapter
+          file: ./abis/MorphoLendingAdapter.json
+        - name: MorphoChainlinkOracleV2
+          file: ./abis/MorphoChainlinkOracleV2.json
+        - name: RebalanceAdapter
+          file: ./abis/RebalanceAdapter.json
+      eventHandlers:
+        - event: LeverageManagerInitialized(address)
+          handler: handleLeverageManagerInitialized
+        - event: LeverageTokenCreated(indexed
+            address,address,address,(address,address,uint256,uint256))
+          handler: handleLeverageTokenCreated
+        - event: ManagementFeeCharged(indexed address,uint256)
+          handler: handleManagementFeeCharged
+        - event: Mint(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
+          handler: handleMint
+        - event: Rebalance(indexed address,indexed address,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256),(uint8,uint256)[])
+          handler: handleRebalance
+        - event: Redeem(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
+          handler: handleRedeem
+      file: ./src/leverage-manager.ts
+  #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
+  # - kind: ethereum
+  #   name: MorphoBlue
+  #   network: base
+  #   source:
+  #     address: "{{base.MorphoBlue.address}}"
+  #     abi: MorphoBlue
+  #     startBlock: {{base.MorphoBlue.startBlock}}
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.9
+  #     language: wasm/assemblyscript
+  #     entities: []
+  #     abis:
+  #       - name: MorphoBlue
+  #         file: ./abis/MorphoBlue.json
+  #     eventHandlers:
+  #       - event: AccrueInterest(indexed bytes32,uint256,uint256,uint256)
+  #         handler: handleAccrueInterest
+  #       - event: Borrow(indexed bytes32,address,indexed address,indexed address,uint256,uint256)
+  #         handler: handleBorrow
+  #       - event: CreateMarket(indexed bytes32,(address,address,address,address,uint256))
+  #         handler: handleCreateMarket
+  #       - event: EnableIrm(indexed address)
+  #         handler: handleEnableIrm
+  #       - event: EnableLltv(uint256)
+  #         handler: handleEnableLltv
+  #       - event: Liquidate(indexed bytes32,indexed address,indexed
+  #           address,uint256,uint256,uint256,uint256,uint256)
+  #         handler: handleLiquidate
+  #       - event: Repay(indexed bytes32,indexed address,indexed address,uint256,uint256)
+  #         handler: handleRepay
+  #       - event: SetFee(indexed bytes32,uint256)
+  #         handler: handleSetFee
+  #       - event: Supply(indexed bytes32,indexed address,indexed address,uint256,uint256)
+  #         handler: handleSupply
+  #       - event: SupplyCollateral(indexed bytes32,indexed address,indexed address,uint256)
+  #         handler: handleSupplyCollateral
+  #       - event: Withdraw(indexed bytes32,address,indexed address,indexed address,uint256,uint256)
+  #         handler: handleWithdraw
+  #       - event: WithdrawCollateral(indexed bytes32,address,indexed address,indexed address,uint256)
+  #         handler: handleWithdrawCollateral
+  #     file: ./src/morpho-blue.ts
+
+templates:
+  - name: LeverageToken
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: LeverageToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - LeverageToken
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
+        - name: LeverageToken
+          file: ./abis/LeverageToken.json
+        - name: LendingAdapter
+          file: ./abis/LendingAdapter.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/leverage-token.ts
+  - name: ChainlinkAggregator
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: ChainlinkAggregator
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - ChainlinkAggregator
+        - MorphoChainlinkOraclePrice
+      abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
+      eventHandlers:
+        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+          handler: handleAnswerUpdated
+      file: ./src/chainlink-aggregator.ts
+  - name: RebalanceAdapter
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: RebalanceAdapter
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - RebalanceAdapter
+        - DutchAuctionRebalanceAdapterData
+      abis:
+        - name: RebalanceAdapter
+          file: ./abis/RebalanceAdapter.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
+      eventHandlers:
+        - event: AuctionCreated((bool,uint120,uint120))
+          handler: handleAuctionCreated
+        - event: AuctionEnded()
+          handler: handleAuctionEnded
+        - event: Take(indexed address,uint256,uint256)
+          handler: handleTake
+      file: ./src/rebalance-adapter.ts
