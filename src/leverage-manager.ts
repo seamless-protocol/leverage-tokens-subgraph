@@ -255,7 +255,8 @@ export function handleRebalance(event: RebalanceEvent): void {
     return
   }
 
-  const rebalance = new Rebalance(0)
+  const rebalanceId = event.transaction.hash.toString().concat("-").concat(event.logIndex.toString())
+  const rebalance = new Rebalance(rebalanceId)
   rebalance.leverageToken = leverageToken.id
   rebalance.collateralRatioBefore = event.params.stateBefore.collateralRatio
   rebalance.collateralRatioAfter = event.params.stateAfter.collateralRatio
@@ -265,24 +266,6 @@ export function handleRebalance(event: RebalanceEvent): void {
   rebalance.equityInDebtAfter = event.params.stateAfter.equity
   rebalance.timestamp = event.block.timestamp.toI64()
   rebalance.blockNumber = event.block.number
-
-  // If the rebalance event corresponds to a dutch auction take, we attach references between them
-  const dutchAuctionRebalanceAdapter = rebalanceAdapter.dutchAuctionRebalanceAdapter ? DutchAuctionRebalanceAdapter.load(rebalanceAdapter.dutchAuctionRebalanceAdapter as Bytes) : null
-  const isDutchAuctionRebalance = event.params.sender.equals(Address.fromBytes(rebalanceAdapter.id)) && dutchAuctionRebalanceAdapter != null
-  if (isDutchAuctionRebalance) {
-    const auctionHistory = (dutchAuctionRebalanceAdapter as DutchAuctionRebalanceAdapter).auctionHistory.load()
-    const latestAuction = auctionHistory.length > 0 ? auctionHistory[auctionHistory.length - 1] : null
-    const takeHistory = latestAuction ? latestAuction.auctionTakeHistory.load() : []
-    const latestTake = takeHistory.length > 0 ? takeHistory[takeHistory.length - 1] : null
-
-    if (latestTake && latestTake.timestamp == rebalance.timestamp && latestTake.rebalance == 0) {
-      latestTake.rebalance = rebalance.id
-      latestTake.save()
-
-      rebalance.dutchAuctionTake = latestTake.id
-    }
-  }
-
   rebalance.save()
 
   const leverageTokenRebalanceHistoryLength = leverageToken.rebalanceHistory.load().length;
@@ -292,7 +275,7 @@ export function handleRebalance(event: RebalanceEvent): void {
     const action = new RebalanceAction(`${leverageToken.id}-${leverageTokenRebalanceHistoryLength}-${i}`)
     action.type = RebalanceActionType(actionData.actionType)
     action.amount = actionData.amount
-    action.rebalance = rebalance.id
+    action.rebalance = rebalanceId
     action.save()
   }
 }
