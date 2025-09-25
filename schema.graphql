@@ -197,6 +197,10 @@ type Rebalance @entity(immutable: true) {
     timestamp: Timestamp!
     " The block number of the rebalance "
     blockNumber: BigInt!
+    " The log index of the rebalance event in the block this rebalance occurred in "
+    logIndex: BigInt!
+    " The transaction hash of the rebalance "
+    transactionHash: Bytes!
 }
 
 type RebalanceAction @entity(immutable: true) {

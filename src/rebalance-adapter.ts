@@ -4,7 +4,8 @@ import {
   DutchAuctionRebalanceAdapter,
   RebalanceAdapter,
   LeverageManager,
-  LeverageToken
+  LeverageToken,
+  Rebalance
 } from "../generated/schema"
 import {
   AuctionCreated as AuctionCreatedEvent,
@@ -130,12 +131,26 @@ export function handleTake(event: TakeEvent): void {
 
   const rebalanceHistory = leverageToken.rebalanceHistory.load()
   if (rebalanceHistory.length > 0) {
-    // Get the most recent rebalance by finding item with highest timestamp to attach to the take (the take event
-    // occurs after the rebalance event occurs)
-    const mostRecentRebalance = rebalanceHistory.reduce((max, rebalance) => {
-      return rebalance.timestamp > max.timestamp ? rebalance : max
-    }, rebalanceHistory[0])
-    dutchAuctionRebalanceAdapterAuctionTake.rebalance = mostRecentRebalance.id
+    // Get the most recent rebalance by finding item with highest log index in the same transaction to attach to the take (the take event
+    // occurs after the rebalance event occurs). It should also be in the same transaction
+    // Note: We use a for loop here because AssemblyScript does not support Closures, and we want to be able to reference the transaction hash
+    // of this event (throws "Compile subgraph ERROR AS100: Not implemented: Closures")
+    let mostRecentRebalance: Rebalance | null = null;
+    for (let i = 0; i < rebalanceHistory.length; i++) {
+      const rebalance = rebalanceHistory[i];
+      const transactionHashMatch = rebalance.transactionHash.equals(event.transaction.hash);
+      const logIndexGreater = mostRecentRebalance ? rebalance.logIndex > mostRecentRebalance.logIndex : false;
+
+      if (mostRecentRebalance === null && transactionHashMatch) {
+        mostRecentRebalance = rebalance;
+      } else if (transactionHashMatch && logIndexGreater) {
+        mostRecentRebalance = rebalance;
+      }
+    }
+
+    if (mostRecentRebalance !== null) {
+      dutchAuctionRebalanceAdapterAuctionTake.rebalance = mostRecentRebalance.id
+    }
   }
 
   dutchAuctionRebalanceAdapterAuctionTake.save()

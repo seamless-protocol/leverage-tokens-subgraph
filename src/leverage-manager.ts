@@ -265,6 +265,8 @@ export function handleRebalance(event: RebalanceEvent): void {
   rebalance.equityInDebtAfter = event.params.stateAfter.equity
   rebalance.timestamp = event.block.timestamp.toI64()
   rebalance.blockNumber = event.block.number
+  rebalance.logIndex = event.logIndex
+  rebalance.transactionHash = event.transaction.hash
   rebalance.save()
 
   const leverageTokenRebalanceHistoryLength = leverageToken.rebalanceHistory.load().length;
