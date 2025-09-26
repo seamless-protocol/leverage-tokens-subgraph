@@ -158,7 +158,8 @@ export function handleMint(event: MintEvent): void {
 
   const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
 
-  const equityAddedInCollateral = event.params.actionData.equity
+  const debtAddedInCollateral = convertDebtToCollateral(oracle, event.params.actionData.debt)
+  const equityAddedInCollateral = event.params.actionData.collateral > debtAddedInCollateral ? event.params.actionData.collateral.minus(debtAddedInCollateral) : BigInt.zero()
   const equityAddedInDebt = convertCollateralToDebt(oracle, equityAddedInCollateral)
 
   let position = getPosition(event.params.sender, Address.fromBytes(leverageToken.id))
@@ -254,7 +255,7 @@ export function handleRebalance(event: RebalanceEvent): void {
     return
   }
 
-  const rebalance = new Rebalance(0)
+  const rebalance = new Rebalance(`${event.transaction.hash.toHexString()}-${event.logIndex.toString()}`)
   rebalance.leverageToken = leverageToken.id
   rebalance.collateralRatioBefore = event.params.stateBefore.collateralRatio
   rebalance.collateralRatioAfter = event.params.stateAfter.collateralRatio
@@ -264,31 +265,15 @@ export function handleRebalance(event: RebalanceEvent): void {
   rebalance.equityInDebtAfter = event.params.stateAfter.equity
   rebalance.timestamp = event.block.timestamp.toI64()
   rebalance.blockNumber = event.block.number
-
-  // If the rebalance event corresponds to a dutch auction take, we attach references between them
-  const dutchAuctionRebalanceAdapter = rebalanceAdapter.dutchAuctionRebalanceAdapter ? DutchAuctionRebalanceAdapter.load(rebalanceAdapter.dutchAuctionRebalanceAdapter as Bytes) : null
-  const isDutchAuctionRebalance = event.params.sender.equals(Address.fromBytes(rebalanceAdapter.id)) && dutchAuctionRebalanceAdapter != null
-  if (isDutchAuctionRebalance) {
-    const auctionHistory = (dutchAuctionRebalanceAdapter as DutchAuctionRebalanceAdapter).auctionHistory.load()
-    const latestAuction = auctionHistory.length > 0 ? auctionHistory[auctionHistory.length - 1] : null
-    const takeHistory = latestAuction ? latestAuction.auctionTakeHistory.load() : []
-    const latestTake = takeHistory.length > 0 ? takeHistory[takeHistory.length - 1] : null
-
-    if (latestTake && latestTake.timestamp == rebalance.timestamp && latestTake.rebalance == 0) {
-      latestTake.rebalance = rebalance.id
-      latestTake.save()
-
-      rebalance.dutchAuctionTake = latestTake.id
-    }
-  }
-
+  rebalance.logIndex = event.logIndex
+  rebalance.transactionHash = event.transaction.hash
   rebalance.save()
 
   const leverageTokenRebalanceHistoryLength = leverageToken.rebalanceHistory.load().length;
   for (let i = 0; i < event.params.actions.length; i++) {
     const actionData = event.params.actions[i]
 
-    const action = new RebalanceAction(`${leverageToken.id}-${leverageTokenRebalanceHistoryLength}-${i}`)
+    const action = new RebalanceAction(`${leverageToken.id.toHexString()}-${leverageTokenRebalanceHistoryLength}-${i}`)
     action.type = RebalanceActionType(actionData.actionType)
     action.amount = actionData.amount
     action.rebalance = rebalance.id
@@ -336,7 +321,8 @@ export function handleRedeem(event: RedeemEvent): void {
 
   const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
 
-  const equityRemovedInCollateral = event.params.actionData.equity
+  const debtRemovedInCollateral = convertDebtToCollateral(oracle, event.params.actionData.debt)
+  const equityRemovedInCollateral = event.params.actionData.collateral > debtRemovedInCollateral ? event.params.actionData.collateral.minus(debtRemovedInCollateral) : BigInt.zero()
   const equityRemovedInDebt = convertCollateralToDebt(oracle, equityRemovedInCollateral)
 
   const equityDepositedForSharesInCollateral = convertToEquity(event.params.actionData.shares, position.totalEquityDepositedInCollateral, position.balance)
@@ -442,41 +428,41 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       }
       oracle.morphoChainlinkOracleData = morphoChainlinkOracleData.id
 
-      // Only BASE_FEED_1 must be defined, the other feeds are optional
-      const baseFeedA = ChainlinkEACAggregatorProxyContract.bind(morphoChainlinkOracleContract.BASE_FEED_1())
+      const baseFeedA = morphoChainlinkOracleContract.BASE_FEED_1()
       const baseFeedBAddress = morphoChainlinkOracleContract.BASE_FEED_2()
       const quoteFeedAAddress = morphoChainlinkOracleContract.QUOTE_FEED_1()
       const quoteFeedBAddress = morphoChainlinkOracleContract.QUOTE_FEED_2()
-      const aggregatorContracts = [
-        ChainlinkAggregatorContract.bind(baseFeedA.aggregator()),
-        baseFeedBAddress.notEqual(Address.zero())
-          ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(baseFeedBAddress).aggregator())
-          : null,
-        quoteFeedAAddress.notEqual(Address.zero())
-          ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(quoteFeedAAddress).aggregator())
-          : null,
-        quoteFeedBAddress.notEqual(Address.zero())
-          ? ChainlinkAggregatorContract.bind(ChainlinkEACAggregatorProxyContract.bind(quoteFeedBAddress).aggregator())
-          : null
-      ]
+
+      const feeds = [baseFeedA, baseFeedBAddress, quoteFeedAAddress, quoteFeedBAddress];
+
+      // Most feeds will have a separate aggregator contract, but some may not
+      // e.g. https://etherscan.io/address/0xbDd2F2D473E8D63d1BFb0185B5bDB8046ca48a72#readContract
+      const feedsWithAggregators = feeds.map<Address>((feed) => {
+        const aggregatorResult = ChainlinkEACAggregatorProxyContract.bind(feed).try_aggregator()
+        if (aggregatorResult.reverted) {
+          return feed
+        }
+        return aggregatorResult.value
+      })
 
       morphoChainlinkOracleData.baseVault = morphoChainlinkOracleContract.BASE_VAULT()
       morphoChainlinkOracleData.quoteVault = morphoChainlinkOracleContract.QUOTE_VAULT()
       morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
 
-      for (let i = 0; i < aggregatorContracts.length; i++) {
-        const aggregatorContract = aggregatorContracts[i]
-        if (aggregatorContract === null) {
+      for (let i = 0; i < feedsWithAggregators.length; i++) {
+        const aggregatorAddress = feeds[i]
+        if (aggregatorAddress.equals(Address.zero())) {
           continue
         }
 
+        const aggregatorContract = ChainlinkAggregatorContract.bind(aggregatorAddress)
         let aggregator = ChainlinkAggregator.load(aggregatorContract._address)
         if (!aggregator) {
           ChainlinkAggregatorTemplate.create(aggregatorContract._address)
           aggregator = new ChainlinkAggregator(aggregatorContract._address)
 
-          const latestRoundData = aggregatorContract.latestRoundData()
           const decimals = aggregatorContract.decimals()
+          const latestRoundData = aggregatorContract.latestRoundData()
 
           aggregator.price = latestRoundData.getAnswer()
           aggregator.decimals = decimals

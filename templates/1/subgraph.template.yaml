@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: LeverageManager
-    network: base
+    network: mainnet
     source:
-      address: "{{base.LeverageManager.address}}"
+      address: "{{ethereum.LeverageManager.address}}"
       abi: LeverageManager
-      startBlock: {{base.LeverageManager.startBlock}}
+      startBlock: {{ethereum.LeverageManager.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -51,13 +51,11 @@ dataSources:
           handler: handleLeverageTokenCreated
         - event: ManagementFeeCharged(indexed address,uint256)
           handler: handleManagementFeeCharged
-        - event: Mint(indexed address,indexed
-            address,(uint256,uint256,uint256,uint256,uint256,uint256))
+        - event: Mint(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
           handler: handleMint
         - event: Rebalance(indexed address,indexed address,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256),(uint8,uint256)[])
           handler: handleRebalance
-        - event: Redeem(indexed address,indexed
-            address,(uint256,uint256,uint256,uint256,uint256,uint256))
+        - event: Redeem(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
           handler: handleRedeem
       file: ./src/leverage-manager.ts
   #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
@@ -107,7 +105,7 @@ dataSources:
 templates:
   - name: LeverageToken
     kind: ethereum/contract
-    network: base
+    network: mainnet
     source:
       abi: LeverageToken
     mapping:
@@ -131,7 +129,7 @@ templates:
       file: ./src/leverage-token.ts
   - name: ChainlinkAggregator
     kind: ethereum/contract
-    network: base
+    network: mainnet
     source:
       abi: ChainlinkAggregator
     mapping:
@@ -152,7 +150,7 @@ templates:
       file: ./src/chainlink-aggregator.ts
   - name: RebalanceAdapter
     kind: ethereum/contract
-    network: base
+    network: mainnet
     source:
       abi: RebalanceAdapter
     mapping:

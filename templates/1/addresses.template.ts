@@ -1,0 +1,1 @@
+export const LEVERAGE_MANAGER_ADDRESS = "{{ethereum.LeverageManager.address}}"

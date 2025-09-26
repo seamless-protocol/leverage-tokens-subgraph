@@ -172,9 +172,9 @@ type LeverageTokenBalanceChange @entity(timeseries: true) {
     blockNumber: BigInt!
 }
 
-type Rebalance @entity(timeseries: true) {
-    " Auto-incremented timeseries data point ID "
-    id: Int8!
+type Rebalance @entity(immutable: true) {
+    " Unique ID of the rebalance "
+    id: ID!
     " The LeverageToken that the rebalance is for "
     leverageToken: LeverageToken!
     " Rebalance actions "
@@ -192,11 +192,15 @@ type Rebalance @entity(timeseries: true) {
     " Equity in debt asset of the LeverageToken after the rebalance "
     equityInDebtAfter: BigInt!
     " The dutch auction take for this rebalance, if the rebalance is a dutch auction rebalance "
-    dutchAuctionTake: DutchAuctionRebalanceAdapterAuctionTake
+    dutchAuctionTake: [DutchAuctionRebalanceAdapterAuctionTake!] @derivedFrom(field: "rebalance")
     " The timestamp of the rebalance "
     timestamp: Timestamp!
     " The block number of the rebalance "
     blockNumber: BigInt!
+    " The log index of the rebalance event in the block this rebalance occurred in "
+    logIndex: BigInt!
+    " The transaction hash of the rebalance "
+    transactionHash: Bytes!
 }
 
 type RebalanceAction @entity(immutable: true) {
