@@ -1,14 +1,21 @@
 {
   "ethereum": {
     "LeverageManager": {
-      "address": "",
-      "startBlock": 0
+      "address": "0x5C37EB148D4a261ACD101e2B997A0F163Fb3E351",
+      "startBlock": 23470226
+    },
+    "MorphoChainlinkOracleV2-wstETH-stETH": {
+      "address": "0xbD60A6770b27E084E8617335ddE769241B0e71D8"
+    },
+    "stETH": {
+      "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+      "startBlock": 23470226
     }
   },
   "base": {
     "LeverageManager": {
-      "address": "",
-      "startBlock": 0
+      "address": "0x38Ba21C6Bf31dF1b1798FCEd07B4e9b07C5ec3a8",
+      "startBlock": 31050780
     }
   }
 }

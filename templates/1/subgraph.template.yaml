@@ -58,6 +58,30 @@ dataSources:
         - event: Redeem(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
           handler: handleRedeem
       file: ./src/leverage-manager.ts
+  - kind: ethereum/contract
+    name: Lido
+    network: mainnet
+    source:
+      abi: Lido
+      address: "{{ethereum.stETH.address}}"
+      startBlock: {{ethereum.stETH.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: Lido
+          file: ./abis/Lido.json
+      entities:
+        - ChainlinkAggregator
+        - MorphoChainlinkOracleData
+        - Oracle
+        - OraclePrice
+      eventHandlers:
+        - event: ETHDistributed(indexed uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleETHDistributed
+          receipt: true
+      file: ./src/lido.ts
   #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
   # - kind: ethereum
   #   name: MorphoBlue

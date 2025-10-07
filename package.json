@@ -6,7 +6,7 @@
     "generate-manifest-ethereum": "mustache ./networks.json ./templates/1/subgraph.template.yaml > ./subgraph.yaml",
     "generate-addresses-base": "mustache ./networks.json ./templates/8453/addresses.template.ts > ./src/constants/addresses.ts",
     "generate-addresses-ethereum": "mustache ./networks.json ./templates/1/addresses.template.ts > ./src/constants/addresses.ts",
-    "codegen": "graph codegen",
+    "codegen": "rm -rf ./generated && graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ leverage-tokens-subgraph",
     "create-local": "graph create --node http://localhost:8020/ leverage-tokens-subgraph",

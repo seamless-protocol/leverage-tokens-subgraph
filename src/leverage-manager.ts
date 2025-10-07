@@ -32,7 +32,7 @@ import { ChainlinkAggregator as ChainlinkAggregatorTemplate } from "../generated
 import { RebalanceAdapter as RebalanceAdapterTemplate } from "../generated/templates"
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/LeverageManager/MorphoChainlinkOracleV2"
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType, RebalanceActionType, WAD_STRING } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { convertToEquity, calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
