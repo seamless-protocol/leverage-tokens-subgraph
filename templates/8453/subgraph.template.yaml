@@ -17,13 +17,16 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ChainlinkAggregator
-        - EquityUpdate
         - LendingAdapter
         - LeverageManager
+        - LeverageManagerAssetStats
         - LeverageToken
+        - LeverageTokenBalanceChange
+        - LeverageTokenState
         - Mint
         - MorphoChainlinkOracleData
         - Oracle
+        - Position
         - Rebalance
         - RebalanceAction
         - Redeem
@@ -72,35 +75,20 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - ChainlinkAggregator
-        - EquityUpdate
-        - LendingAdapter
         - LeverageManager
+        - LeverageManagerAssetStats
         - LeverageToken
+        - LeverageTokenBalanceChange
+        - LeverageTokenState
         - Mint
-        - MorphoChainlinkOracleData
-        - Oracle
-        - Rebalance
-        - RebalanceAction
+        - Position
         - Redeem
         - User
       abis:
-        - name: ChainlinkAggregator
-          file: ./abis/ChainlinkAggregator.json
-        - name: ChainlinkEACAggregatorProxy
-          file: ./abis/ChainlinkEACAggregatorProxy.json
         - name: LeverageManager
           file: ./abis/LeverageManager.json
         - name: LeverageManagerV0
           file: ./abis/LeverageManagerV0.json
-        - name: LeverageToken
-          file: ./abis/LeverageToken.json
-        - name: MorphoLendingAdapter
-          file: ./abis/MorphoLendingAdapter.json
-        - name: MorphoChainlinkOracleV2
-          file: ./abis/MorphoChainlinkOracleV2.json
-        - name: RebalanceAdapter
-          file: ./abis/RebalanceAdapter.json
       eventHandlers:
         - event: Mint(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256,uint256)) # v0 mint event signature
           handler: handleMintV0
