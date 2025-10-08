@@ -38,8 +38,6 @@ dataSources:
           file: ./abis/ChainlinkEACAggregatorProxy.json
         - name: LeverageManager
           file: ./abis/LeverageManager.json
-        - name: LeverageManagerV0
-          file: ./abis/LeverageManagerV0.json
         - name: LeverageToken
           file: ./abis/LeverageToken.json
         - name: MorphoLendingAdapter

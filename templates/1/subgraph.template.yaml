@@ -17,13 +17,16 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ChainlinkAggregator
-        - EquityUpdate
         - LendingAdapter
         - LeverageManager
+        - LeverageManagerAssetStats
         - LeverageToken
+        - LeverageTokenBalanceChange
+        - LeverageTokenState
         - Mint
         - MorphoChainlinkOracleData
         - Oracle
+        - Position
         - Rebalance
         - RebalanceAction
         - Redeem
