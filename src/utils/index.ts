@@ -63,7 +63,7 @@ export function convertDebtToCollateral(
 ): BigInt {
     const price = oracle.price
     const numerator = debt.times(BigInt.fromString(MORPHO_ORACLE_PRICE_SCALE_STRING));
-    const remainder = numerator.mod(price);
-    const quotient = numerator.div(price);
+    const remainder = price.isZero() ? BigInt.zero() : numerator.mod(price);
+    const quotient = price.isZero() ? BigInt.zero() : numerator.div(price);
     return remainder.isZero() ? quotient : quotient.plus(BigInt.fromI32(1)); // Rounding up
 }

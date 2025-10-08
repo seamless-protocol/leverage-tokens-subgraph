@@ -1,1 +1,2 @@
 export const LEVERAGE_MANAGER_ADDRESS = "{{ethereum.LeverageManager.address}}"
+export const MORPHO_CHAINLINK_ORACLE_V2_WSTETH_STETH_ADDRESS = "{{ethereum.MorphoChainlinkOracleV2-wstETH-stETH.address}}"
