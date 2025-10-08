@@ -502,7 +502,7 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
 
       for (let i = 0; i < feedsWithAggregators.length; i++) {
-        const aggregatorAddress = feeds[i]
+        const aggregatorAddress = feedsWithAggregators[i]
         if (aggregatorAddress.equals(Address.zero())) {
           continue
         }
