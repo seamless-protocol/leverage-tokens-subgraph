@@ -117,6 +117,29 @@ dataSources:
           handler: handleETHDistributed
           receipt: true
       file: ./src/lido.ts
+  - kind: ethereum/contract
+    name: RlpPriceStorage
+    network: mainnet
+    source:
+      abi: RlpPriceStorage
+      address: "{{ethereum.rlpPriceStorage.address}}"
+      startBlock: {{ethereum.rlpPriceStorage.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: RlpPriceStorage
+          file: ./abis/RlpPriceStorage.json
+      entities:
+        - ChainlinkAggregator
+        - MorphoChainlinkOracleData
+        - Oracle
+        - OraclePrice
+      eventHandlers:
+        - event: PriceSet(indexed bytes32,uint256,uint256)
+          handler: handlePriceSet
+      file: ./src/rlp-price-storage.ts
   #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
   # - kind: ethereum
   #   name: MorphoBlue
