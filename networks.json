@@ -16,6 +16,9 @@
     "LeverageManager": {
       "address": "0x38Ba21C6Bf31dF1b1798FCEd07B4e9b07C5ec3a8",
       "startBlock": 31050780
+    },
+    "MorphoChainlinkOracleV2-wstETH-stETH": {
+      "address": "0x0000000000000000000000000000000000000000"
     }
   }
 }

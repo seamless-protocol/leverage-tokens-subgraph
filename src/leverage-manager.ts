@@ -19,10 +19,16 @@ import {
   LeverageManagerInitialized as LeverageManagerInitializedEvent,
   LeverageTokenCreated as LeverageTokenCreatedEvent,
   ManagementFeeCharged as ManagementFeeChargedEvent,
+  MintActionDataStruct,
   Mint as MintEvent,
   Rebalance as RebalanceEvent,
+  RedeemActionDataStruct,
   Redeem as RedeemEvent
 } from "../generated/LeverageManager/LeverageManager"
+import {
+  Mint as MintEventV0,
+  Redeem as RedeemEventV0
+} from "../generated/LeverageManagerV0/LeverageManagerV0"
 import { ChainlinkAggregator as ChainlinkAggregatorContract } from "../generated/LeverageManager/ChainlinkAggregator"
 import { ChainlinkEACAggregatorProxy as ChainlinkEACAggregatorProxyContract } from "../generated/LeverageManager/ChainlinkEACAggregatorProxy"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
@@ -32,7 +38,7 @@ import { ChainlinkAggregator as ChainlinkAggregatorTemplate } from "../generated
 import { RebalanceAdapter as RebalanceAdapterTemplate } from "../generated/templates"
 import { MorphoLendingAdapter as MorphoLendingAdapterContract } from "../generated/LeverageManager/MorphoLendingAdapter"
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/LeverageManager/MorphoChainlinkOracleV2"
-import { Address, BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType, RebalanceActionType, WAD_STRING } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { convertToEquity, calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
@@ -121,6 +127,29 @@ export function handleLeverageTokenCreated(
 export function handleManagementFeeCharged(
   event: ManagementFeeChargedEvent
 ): void {
+}
+
+export function handleMintV0(event: MintEventV0): void {
+  const mintActionDataStruct = new MintActionDataStruct(5)
+  mintActionDataStruct[0] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.collateral)
+  mintActionDataStruct[1] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.debt)
+  mintActionDataStruct[2] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.shares)
+  mintActionDataStruct[3] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.tokenFee)
+  mintActionDataStruct[4] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.treasuryFee)
+
+  event.parameters[2].value = ethereum.Value.fromTuple(mintActionDataStruct)
+
+  const mintEvent = new MintEvent(
+    event.address,
+    event.logIndex,
+    event.transactionLogIndex,
+    event.logType,
+    event.block,
+    event.transaction,
+    event.parameters,
+    event.receipt
+  )
+  handleMint(mintEvent)
 }
 
 export function handleMint(event: MintEvent): void {
@@ -279,6 +308,29 @@ export function handleRebalance(event: RebalanceEvent): void {
     action.rebalance = rebalance.id
     action.save()
   }
+}
+
+export function handleRedeemV0(event: RedeemEventV0): void {
+  const redeemActionDataStruct = new RedeemActionDataStruct(5)
+  redeemActionDataStruct[0] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.collateral)
+  redeemActionDataStruct[1] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.debt)
+  redeemActionDataStruct[2] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.shares)
+  redeemActionDataStruct[3] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.tokenFee)
+  redeemActionDataStruct[4] = ethereum.Value.fromUnsignedBigInt(event.params.actionData.treasuryFee)
+
+  event.parameters[2].value = ethereum.Value.fromTuple(redeemActionDataStruct)
+
+  const redeemEvent = new RedeemEvent(
+    event.address,
+    event.logIndex,
+    event.transactionLogIndex,
+    event.logType,
+    event.block,
+    event.transaction,
+    event.parameters,
+    event.receipt
+  )
+  handleRedeem(redeemEvent)
 }
 
 export function handleRedeem(event: RedeemEvent): void {
@@ -450,7 +502,7 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
 
       for (let i = 0; i < feedsWithAggregators.length; i++) {
-        const aggregatorAddress = feeds[i]
+        const aggregatorAddress = feedsWithAggregators[i]
         if (aggregatorAddress.equals(Address.zero())) {
           continue
         }

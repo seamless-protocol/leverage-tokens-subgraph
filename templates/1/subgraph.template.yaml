@@ -17,13 +17,16 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ChainlinkAggregator
-        - EquityUpdate
         - LendingAdapter
         - LeverageManager
+        - LeverageManagerAssetStats
         - LeverageToken
+        - LeverageTokenBalanceChange
+        - LeverageTokenState
         - Mint
         - MorphoChainlinkOracleData
         - Oracle
+        - Position
         - Rebalance
         - RebalanceAction
         - Redeem
@@ -57,6 +60,38 @@ dataSources:
           handler: handleRebalance
         - event: Redeem(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256))
           handler: handleRedeem
+      file: ./src/leverage-manager.ts
+  - kind: ethereum
+    name: LeverageManagerV0
+    network: mainnet
+    source:
+      address: "{{ethereum.LeverageManager.address}}"
+      abi: LeverageManagerV0
+      startBlock: {{ethereum.LeverageManager.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - LeverageManager
+        - LeverageManagerAssetStats
+        - LeverageToken
+        - LeverageTokenBalanceChange
+        - LeverageTokenState
+        - Mint
+        - Position
+        - Redeem
+        - User
+      abis:
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
+        - name: LeverageManagerV0
+          file: ./abis/LeverageManagerV0.json
+      eventHandlers:
+        - event: Mint(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256,uint256)) # v0 mint event signature
+          handler: handleMintV0
+        - event: Redeem(indexed address,indexed address,(uint256,uint256,uint256,uint256,uint256,uint256)) # v0 redeem event signature
+          handler: handleRedeemV0
       file: ./src/leverage-manager.ts
   - kind: ethereum/contract
     name: Lido
