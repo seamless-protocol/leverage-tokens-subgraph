@@ -105,10 +105,14 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       abis:
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: Lido
           file: ./abis/Lido.json
       entities:
         - ChainlinkAggregator
+        - LeverageToken
+        - LeverageTokenState
         - MorphoChainlinkOracleData
         - Oracle
         - OraclePrice
@@ -129,10 +133,14 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       abis:
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: RlpPriceStorage
           file: ./abis/RlpPriceStorage.json
       entities:
         - ChainlinkAggregator
+        - LeverageToken
+        - LeverageTokenState
         - MorphoChainlinkOracleData
         - Oracle
         - OraclePrice
