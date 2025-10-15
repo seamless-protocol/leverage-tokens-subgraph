@@ -42,6 +42,7 @@ import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, MORPHO_ORACLE_PRICE_DECIMALS, OracleType, RebalanceActionType, WAD_STRING } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { convertToEquity, calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
+import { MORPHO_CHAINLINK_ORACLE_V2_RLP_USDC_ADDRESS } from "./constants/addresses"
 
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
@@ -470,7 +471,6 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
 
       oracle = new Oracle(oracleAddress);
       oracle.leverageManager = leverageManager.id
-      oracle.decimals = MORPHO_ORACLE_PRICE_DECIMALS
       oracle.type = OracleType.MORPHO_CHAINLINK
 
       let morphoChainlinkOracleData = MorphoChainlinkOracleData.load(oracleAddress)
@@ -501,6 +501,7 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       morphoChainlinkOracleData.quoteVault = morphoChainlinkOracleContract.QUOTE_VAULT()
       morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
 
+      let feedDecimals = BigInt.zero()
       for (let i = 0; i < feedsWithAggregators.length; i++) {
         const aggregatorAddress = feedsWithAggregators[i]
         if (aggregatorAddress.equals(Address.zero())) {
@@ -519,6 +520,8 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
           aggregator.price = latestRoundData.getAnswer()
           aggregator.decimals = decimals
           aggregator.save()
+
+          feedDecimals = BigInt.fromI32(decimals)
         }
 
         if (i === 0) {
@@ -533,6 +536,7 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       }
 
       oracle.price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
+      oracle.decimals = log10BigInt(morphoChainlinkOracleData.scaleFactor).plus(feedDecimals).toI32()
       oracle.save()
 
       const priceUpdate = new OraclePrice(0)
@@ -561,4 +565,9 @@ function initLeverageManagerAssetStats(leverageManager: Address, asset: Address)
     leverageManagerAssetStats.save()
   }
   return leverageManagerAssetStats
+}
+
+function log10BigInt(x: BigInt): BigInt {
+  if (x <= BigInt.zero()) throw new Error("x must be positive");
+  return BigInt.fromI32(x.toString().length - 1);
 }
