@@ -36,6 +36,8 @@ dataSources:
           file: ./abis/ChainlinkAggregator.json
         - name: ChainlinkEACAggregatorProxy
           file: ./abis/ChainlinkEACAggregatorProxy.json
+        - name: ERC20
+          file: ./abis/ERC20.json
         - name: LeverageManager
           file: ./abis/LeverageManager.json
         - name: LeverageToken
