@@ -12,6 +12,7 @@ export function handleBlock(block: ethereum.Block): void {
             // oracle = new Oracle(Address.fromString(oracleAddress))
             // oracle.leverageManager = Address.fromString(LEVERAGE_MANAGER_ADDRESS)
             // oracle.type = OracleType.MORPHO_CHAINLINK
+            // oracle.decimals = 6; // Dummy decimals value
 
             return;
         }
@@ -19,7 +20,6 @@ export function handleBlock(block: ethereum.Block): void {
         const oracleContract = MorphoChainlinkOracleV2Contract.bind(Address.fromString(oracleAddress))
         const price = oracleContract.price()
         oracle.price = price
-        oracle.decimals = 6
         oracle.save()
 
         const priceUpdate = new OraclePrice(0)
