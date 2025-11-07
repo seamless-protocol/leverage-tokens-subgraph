@@ -17,6 +17,10 @@
     "stETH": {
       "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
       "startBlock": 23470226
+    },
+    "ChainlinkOraclePolling": {
+      "every": 1788,
+      "oracles": []
     }
   },
   "base": {

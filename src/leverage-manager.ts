@@ -31,6 +31,7 @@ import {
 } from "../generated/LeverageManagerV0/LeverageManagerV0"
 import { ChainlinkAggregator as ChainlinkAggregatorContract } from "../generated/LeverageManager/ChainlinkAggregator"
 import { ChainlinkEACAggregatorProxy as ChainlinkEACAggregatorProxyContract } from "../generated/LeverageManager/ChainlinkEACAggregatorProxy"
+import { ERC20 as ERC20Contract } from "../generated/LeverageManager/ERC20"
 import { LeverageManager as LeverageManagerContract } from "../generated/LeverageManager/LeverageManager"
 import { RebalanceAdapter as RebalanceAdapterContract } from "../generated/LeverageManager/RebalanceAdapter"
 import { LeverageToken as LeverageTokenTemplate } from "../generated/templates"
@@ -500,7 +501,6 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       morphoChainlinkOracleData.quoteVault = morphoChainlinkOracleContract.QUOTE_VAULT()
       morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
 
-      let feedDecimals = BigInt.zero()
       for (let i = 0; i < feedsWithAggregators.length; i++) {
         const aggregatorAddress = feedsWithAggregators[i]
         if (aggregatorAddress.equals(Address.zero())) {
@@ -519,8 +519,6 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
           aggregator.price = latestRoundData.getAnswer()
           aggregator.decimals = decimals
           aggregator.save()
-
-          feedDecimals = BigInt.fromI32(decimals)
         }
 
         if (i === 0) {
@@ -534,8 +532,13 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
         }
       }
 
+
+      const collateralTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.collateralAsset)).decimals()
+      const debtTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.debtAsset)).decimals()
+
+      // MorphoChainlinkOracleV2 returns price in 36 + loan token decimals - collateral token decimals precision
+      oracle.decimals = 36 + debtTokenDecimals - collateralTokenDecimals
       oracle.price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
-      oracle.decimals = log10BigInt(morphoChainlinkOracleData.scaleFactor).plus(feedDecimals).toI32()
       oracle.save()
 
       const priceUpdate = new OraclePrice(0)

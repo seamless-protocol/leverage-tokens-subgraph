@@ -33,7 +33,7 @@ export function handleETHDistributed(event: ETHDistributedEvent): void {
 
 
     if (tokenRebasedEventValues.length == 0) {
-        log.critical(
+        log.warning(
             "Event TokenRebased not found when ETHDistributed! block: {} txHash: {} logIdx: {} ",
             [
                 event.block.number.toString(),
