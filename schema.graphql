@@ -241,6 +241,39 @@ type LeverageTokenState @entity(timeseries: true) {
     blockNumber: BigInt!
 }
 
+type LeverageTokenStateStats @aggregation(intervals: ["hour", "day"], source: "LeverageTokenState") {
+    " Auto-generated ID of the aggregation bucket "
+    id: Int8!
+    " Beginning timestamp of the aggregation bucket "
+    timestamp: Timestamp!
+    " The LeverageToken whose state is aggregated "
+    leverageToken: LeverageToken!
+    " Last collateral ratio observed within the interval "
+    lastCollateralRatio: BigInt! @aggregate(fn: "last", arg: "collateralRatio")
+    " Minimum collateral ratio observed within the interval "
+    minCollateralRatio: BigInt! @aggregate(fn: "min", arg: "collateralRatio")
+    " Maximum collateral ratio observed within the interval "
+    maxCollateralRatio: BigInt! @aggregate(fn: "max", arg: "collateralRatio")
+    " Last total collateral observed within the interval "
+    lastTotalCollateral: BigInt! @aggregate(fn: "last", arg: "totalCollateral")
+    " Last total debt observed within the interval "
+    lastTotalDebt: BigInt! @aggregate(fn: "last", arg: "totalDebt")
+    " Last total equity in collateral observed within the interval "
+    lastTotalEquityInCollateral: BigInt! @aggregate(fn: "last", arg: "totalEquityInCollateral")
+    " Last total equity in debt observed within the interval "
+    lastTotalEquityInDebt: BigInt! @aggregate(fn: "last", arg: "totalEquityInDebt")
+    " Last total supply observed within the interval "
+    lastTotalSupply: BigInt! @aggregate(fn: "last", arg: "totalSupply")
+    " Last equity per token in collateral observed within the interval "
+    lastEquityPerTokenInCollateral: BigInt! @aggregate(fn: "last", arg: "equityPerTokenInCollateral")
+    " Last equity per token in debt observed within the interval "
+    lastEquityPerTokenInDebt: BigInt! @aggregate(fn: "last", arg: "equityPerTokenInDebt")
+    " Last block number observed within the interval "
+    lastBlockNumber: BigInt! @aggregate(fn: "last", arg: "blockNumber")
+    " Number of state observations captured within the interval "
+    observationCount: BigInt! @aggregate(fn: "count")
+}
+
 type Oracle @entity(immutable: false) {
     " Address of the oracle "
     id: Bytes!
@@ -269,6 +302,23 @@ type OraclePrice @entity(timeseries: true) {
     price: BigInt!
     " The timestamp of the price "
     timestamp: Timestamp!
+}
+
+type OraclePriceStats @aggregation(intervals: ["hour", "day"], source: "OraclePrice") {
+    " Auto-generated ID of the aggregation bucket "
+    id: Int8!
+    " Beginning timestamp of the aggregation bucket "
+    timestamp: Timestamp!
+    " The oracle whose prices are aggregated "
+    oracle: Oracle!
+    " Last price observed within the interval "
+    lastPrice: BigInt! @aggregate(fn: "last", arg: "price")
+    " Minimum price observed within the interval "
+    minPrice: BigInt! @aggregate(fn: "min", arg: "price")
+    " Maximum price observed within the interval "
+    maxPrice: BigInt! @aggregate(fn: "max", arg: "price")
+    " Number of price observations captured within the interval "
+    observationCount: BigInt! @aggregate(fn: "count")
 }
 
 type MorphoChainlinkOracleData @entity(immutable: true) {
@@ -354,4 +404,23 @@ type DutchAuctionRebalanceAdapterAuctionTake @entity(timeseries: true) {
     rebalance: Rebalance
     " The timestamp the take was made "
     timestamp: Timestamp!
+}
+
+type DutchAuctionRebalanceAdapterAuctionTakeStats @aggregation(intervals: ["hour", "day"], source: "DutchAuctionRebalanceAdapterAuctionTake") {
+    " Auto-generated ID of the aggregation bucket "
+    id: Int8!
+    " Beginning timestamp of the aggregation bucket "
+    timestamp: Timestamp!
+    " The auction whose takes are aggregated "
+    auction: DutchAuctionRebalanceAdapterAuction!
+    " The rebalance associated with the aggregated takes, if available "
+    rebalance: Rebalance
+    " Total amount in across all takes within the interval "
+    totalAmountIn: BigInt! @aggregate(fn: "sum", arg: "amountIn")
+    " Total amount out across all takes within the interval "
+    totalAmountOut: BigInt! @aggregate(fn: "sum", arg: "amountOut")
+    " Last price multiplier observed within the interval "
+    lastPriceMultiplier: BigInt! @aggregate(fn: "last", arg: "priceMultiplier")
+    " Number of takes captured within the interval "
+    takeCount: BigInt! @aggregate(fn: "count")
 }
