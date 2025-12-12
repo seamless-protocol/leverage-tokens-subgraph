@@ -4,4 +4,6 @@ export const MORPHO_CHAINLINK_ORACLE_V2_RLP_USDC_ADDRESS = "{{ethereum.MorphoCha
 export const MORPHO_CHAINLINK_ORACLE_V2_SIUSD_USDC_ADDRESS = "{{ethereum.MorphoChainlinkOracleV2-siUSD-USDC.address}}"
 export const MORPHO_CHAINLINK_ORACLE_V2_WSTETH_STETH_ADDRESS = "{{ethereum.MorphoChainlinkOracleV2-wstETH-stETH.address}}"
 
+export const IUSD_FIXED_PRICE_ORACLE_ADDRESS = "{{ethereum.iUSDFixedPriceOracle.address}}"
+
 export const CHAINLINK_ORACLE_POLLING_ADDRESSES = "{{ethereum.ChainlinkOraclePolling.oracles}}".split(",")
