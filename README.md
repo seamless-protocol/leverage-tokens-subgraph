@@ -11,8 +11,8 @@ npm run generate-manifest-ethereum
 Additionally, some addresses from [networks.json](./networks.json) are needed in the event handler logic. To generate the necessary address constants file, execute:
 
 ```bash
-npm run generate-addresses
+npm run generate-addresses-ethereum
 ```
 
-For testing, [Tenderly Virtual Testnets](https://docs.tenderly.co/virtual-testnets/develop/thegraph) are recommended.
+For testing, [Subgraph Studio](https://thegraph.com/studio/) is recommended. [Tenderly Virtual Testnets](https://docs.tenderly.co/virtual-testnets/develop/thegraph) can also be used.
 
