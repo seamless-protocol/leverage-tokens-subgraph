@@ -1,7 +1,7 @@
 import { Address, BigInt, ethereum, log } from "@graphprotocol/graph-ts"
 import { Deposit as DepositEvent, Withdraw as WithdrawEvent, VaultProfit as VaultProfitEvent, VaultLoss as VaultLossEvent } from "../generated/siUSD/siUSD"
 import { Oracle, OraclePrice, siUsd, siUsdEpochReward, iUSDFixedPriceOracle } from "../generated/schema"
-import { IUSD_FIXED_PRICE_ORACLE_ADDRESS, LEVERAGE_MANAGER_ADDRESS, MORPHO_CHAINLINK_ORACLE_V2_SIUSD_USDC_ADDRESS } from "./constants/addresses"
+import { IUSD_FIXED_PRICE_ORACLE_ADDRESS, LEVERAGE_MANAGER_ADDRESS, MORPHO_CHAINLINK_ORACLE_V2_SIUSD_USDC_ADDRESS, SIUSD_ADDRESS } from "./constants/addresses"
 import { OracleType } from "./constants"
 import { getTotalAssets } from "./utils/siUsd"
 import { Transfer as TransferEvent } from "../generated/iUSD/ERC20"
@@ -12,8 +12,6 @@ const SIUSD_USDC_ORACLE_BASE_VAULT_CONVERSION_FACTOR = BigInt.fromString("100000
 const SIUSD_USDC_ORACLE_SCALE_FACTOR = BigInt.fromString("10000000000")
 const USDC_ORACLE_QUOTE_FEED_1_PRICE = BigInt.fromString("1000000000000")
 const IUSD_FIXED_PRICE_ORACLE_DEPLOYMENT_PRICE = BigInt.fromString("1000000000000000000")
-
-const SIUSD_ADDRESS = "0xDBDC1Ef57537E34680B898E1FEBD3D68c7389bCB"
 
 export function handleDeposit(event: DepositEvent): void {
     let _siUSD = siUsd.load(event.address)

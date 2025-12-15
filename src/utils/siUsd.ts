@@ -1,3 +1,7 @@
+/**
+ * Utils from the siUSD contract https://etherscan.io/address/0xDBDC1Ef57537E34680B898E1FEBD3D68c7389bCB#code
+ */
+
 import { BigInt } from "@graphprotocol/graph-ts";
 import { siUsdEpochReward } from "../../generated/schema";
 
