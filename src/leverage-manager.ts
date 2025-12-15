@@ -545,6 +545,7 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       priceUpdate.oracle = oracle.id
       priceUpdate.price = oracle.price
       priceUpdate.timestamp = event.block.timestamp.toI64()
+      priceUpdate.blockNumber = event.block.number
       priceUpdate.save()
 
       morphoChainlinkOracleData.save()

@@ -34,6 +34,7 @@ export function handlePriceSet(event: PriceSetEvent): void {
     priceUpdate.oracle = rlpUsdcOracle.id
     priceUpdate.price = rlpUsdcOracle.price
     priceUpdate.timestamp = event.block.timestamp.toI64()
+    priceUpdate.blockNumber = event.block.number
     priceUpdate.save()
 
     // Update state history for all LeverageTokens that use this oracle

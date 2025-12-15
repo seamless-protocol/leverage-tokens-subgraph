@@ -302,6 +302,8 @@ type OraclePrice @entity(timeseries: true) {
     price: BigInt!
     " The timestamp of the price "
     timestamp: Timestamp!
+    " The block number of the price "
+    blockNumber: BigInt!
 }
 
 type OraclePriceStats @aggregation(intervals: ["hour", "day"], source: "OraclePrice") {

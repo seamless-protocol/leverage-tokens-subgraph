@@ -26,6 +26,7 @@ export function handleBlock(block: ethereum.Block): void {
         priceUpdate.oracle = oracle.id
         priceUpdate.price = oracle.price
         priceUpdate.timestamp = block.timestamp.toI64()
+        priceUpdate.blockNumber = block.number
         priceUpdate.save()
     }
 }
