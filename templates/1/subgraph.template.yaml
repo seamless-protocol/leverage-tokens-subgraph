@@ -174,6 +174,80 @@ dataSources:
         - event: PriceSet(indexed bytes32,uint256,uint256)
           handler: handlePriceSet
       file: ./src/rlp-price-storage.ts
+  - kind: ethereum/contract
+    name: siUSD
+    network: mainnet
+    source:
+      abi: siUSD
+      address: "{{ethereum.siUSD.address}}"
+      startBlock: {{ethereum.siUSD.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: siUSD
+          file: ./abis/siUSD.json
+      entities:
+        - Oracle
+        - OraclePrice
+        - siUsd
+        - siUsdEpochReward
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+        - event: VaultProfit(indexed uint256,uint256,uint256)
+          handler: handleVaultProfit
+        - event: VaultLoss(indexed uint256,uint256,uint256)
+          handler: handleVaultLoss
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{ethereum.siUSD.pricePolling}}
+      file: ./src/siUSD.ts
+  - kind: ethereum/contract
+    name: iUSD
+    network: mainnet
+    source:
+      abi: ERC20
+      address: "{{ethereum.iUSD.address}}"
+      startBlock: {{ethereum.iUSD.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      entities:
+        - ERC20
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleIUSDTransfer
+      file: ./src/siUSD.ts
+  - kind: ethereum/contract
+    name: iUSDFixedPriceOracle
+    network: mainnet
+    source:
+      abi: iUSDFixedPriceOracle
+      address: "{{ethereum.iUSDFixedPriceOracle.address}}"
+      startBlock: {{ethereum.iUSDFixedPriceOracle.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: iUSDFixedPriceOracle
+          file: ./abis/iUSDFixedPriceOracle.json
+      entities:
+        - iUSDFixedPriceOracle
+      eventHandlers:
+        - event: PriceSet(indexed uint256,uint256)
+          handler: handleIUSDFixedPriceOraclePriceSet
+      file: ./src/siUSD.ts
   #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
   # - kind: ethereum
   #   name: MorphoBlue

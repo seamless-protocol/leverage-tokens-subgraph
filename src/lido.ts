@@ -77,6 +77,7 @@ function updateWstETHOraclePrice(totalPooledEth: BigInt, totalShares: BigInt, ti
     priceUpdate.oracle = wstETHOracle.id
     priceUpdate.price = wstETHOracle.price
     priceUpdate.timestamp = timestamp.toI64()
+    priceUpdate.blockNumber = blockNumber
     priceUpdate.save()
 
     // Update state history for all LeverageTokens that use this oracle

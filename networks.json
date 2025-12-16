@@ -1,5 +1,13 @@
 {
   "ethereum": {
+    "iUSD": {
+      "address": "0x48f9e38f3070AD8945DFEae3FA70987722E3D89c",
+      "startBlock": 22540416
+    },
+    "iUSDFixedPriceOracle": {
+      "address": "0x8ABc952f91dB6695E765744ae340BC5eA4B344c1",
+      "startBlock": 22540464
+    },
     "LeverageManager": {
       "address": "0x5C37EB148D4a261ACD101e2B997A0F163Fb3E351",
       "startBlock": 23470226
@@ -7,12 +15,20 @@
     "MorphoChainlinkOracleV2-RLP-USDC": {
       "address": "0x19018450A02bC5c1994eaD517498311f64B2626a"
     },
+    "MorphoChainlinkOracleV2-siUSD-USDC": {
+      "address": "0xd2cC46b9B2D761502eF933320ecf0268EC0dfa6d"
+    },
     "MorphoChainlinkOracleV2-wstETH-stETH": {
       "address": "0xbD60A6770b27E084E8617335ddE769241B0e71D8"
     },
     "rlpPriceStorage": {
       "address": "0xaE2364579D6cB4Bbd6695846C1D595cA9AF3574d",
       "startBlock": 23470226
+    },
+    "siUSD": {
+      "address": "0xDBDC1Ef57537E34680B898E1FEBD3D68c7389bCB",
+      "startBlock": 22540416,
+      "pricePolling": 150
     },
     "stETH": {
       "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
@@ -27,6 +43,9 @@
     }
   },
   "base": {
+    "iUSDFixedPriceOracle": {
+      "address": "0x0000000000000000000000000000000000000000"
+    },
     "LeverageManager": {
       "address": "0x38Ba21C6Bf31dF1b1798FCEd07B4e9b07C5ec3a8",
       "startBlock": 31050780
@@ -34,7 +53,13 @@
     "MorphoChainlinkOracleV2-RLP-USDC": {
       "address": "0x0000000000000000000000000000000000000000"
     },
+    "MorphoChainlinkOracleV2-siUSD-USDC": {
+      "address": "0x0000000000000000000000000000000000000000"
+    },
     "MorphoChainlinkOracleV2-wstETH-stETH": {
+      "address": "0x0000000000000000000000000000000000000000"
+    },
+    "siUSD": {
       "address": "0x0000000000000000000000000000000000000000"
     }
   }

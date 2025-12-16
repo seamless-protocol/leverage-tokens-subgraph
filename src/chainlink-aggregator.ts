@@ -52,6 +52,7 @@ export function handleAnswerUpdated(event: AnswerUpdatedEvent): void {
             priceUpdate.oracle = oracle.id
             priceUpdate.price = newOraclePrice
             priceUpdate.timestamp = event.block.timestamp.toI64()
+            priceUpdate.blockNumber = event.block.number
             priceUpdate.save()
 
             // Update state history for all LeverageTokens that use this oracle

@@ -302,6 +302,8 @@ type OraclePrice @entity(timeseries: true) {
     price: BigInt!
     " The timestamp of the price "
     timestamp: Timestamp!
+    " The block number of the price "
+    blockNumber: BigInt!
 }
 
 type OraclePriceStats @aggregation(intervals: ["hour", "day"], source: "OraclePrice") {
@@ -423,4 +425,31 @@ type DutchAuctionRebalanceAdapterAuctionTakeStats @aggregation(intervals: ["hour
     lastPriceMultiplier: BigInt! @aggregate(fn: "last", arg: "priceMultiplier")
     " Number of takes captured within the interval "
     takeCount: BigInt! @aggregate(fn: "count")
+}
+
+type siUsd @entity(immutable: false) {
+    " Address of the siUSD contract "
+    id: Bytes!
+    " Total iUSD in the siUSD contract "
+    totalAssets: BigInt!
+    " Total shares in the siUSD contract "
+    totalShares: BigInt!
+    " Epoch rewards for each epoch "
+    epochRewards: [siUsdEpochReward!]! @derivedFrom(field: "siUSD")
+}
+
+type siUsdEpochReward @entity(immutable: false) {
+    " epoch number "
+    id: String!
+    " The siUSD contract that the epoch reward is for "
+    siUSD: siUsd!
+    " The reward amount in iUSD for the epoch "
+    rewards: BigInt!
+}
+
+type iUSDFixedPriceOracle @entity(immutable: false) {
+    " Address of the iUSDFixedPriceOracle contract "
+    id: Bytes!
+    " The current price of the iUSDFixedPriceOracle "
+    price: BigInt!
 }
