@@ -20,6 +20,8 @@ dataSources:
         - Oracle
         - OraclePrice
       abis:
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: MorphoChainlinkOracleV2
           file: ./abis/MorphoChainlinkOracleV2.json
       blockHandlers:
@@ -186,6 +188,8 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       abis:
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: siUSD
           file: ./abis/siUSD.json
       entities:
@@ -222,6 +226,8 @@ dataSources:
       abis:
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
       entities:
         - ERC20
       eventHandlers:
@@ -242,6 +248,8 @@ dataSources:
       abis:
         - name: iUSDFixedPriceOracle
           file: ./abis/iUSDFixedPriceOracle.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
       entities:
         - iUSDFixedPriceOracle
       eventHandlers:
