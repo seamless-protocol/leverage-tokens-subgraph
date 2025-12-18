@@ -20,6 +20,8 @@ dataSources:
         - Oracle
         - OraclePrice
       abis:
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: MorphoChainlinkOracleV2
           file: ./abis/MorphoChainlinkOracleV2.json
       blockHandlers:
@@ -186,6 +188,8 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       abis:
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
         - name: siUSD
           file: ./abis/siUSD.json
       entities:
@@ -207,7 +211,7 @@ dataSources:
           filter:
             kind: polling
             every: {{ethereum.siUSD.pricePolling}}
-      file: ./src/siUSD.ts
+      file: ./src/siUsd.ts
   - kind: ethereum/contract
     name: iUSD
     network: mainnet
@@ -222,12 +226,14 @@ dataSources:
       abis:
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
       entities:
         - ERC20
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleIUSDTransfer
-      file: ./src/siUSD.ts
+      file: ./src/siUsd.ts
   - kind: ethereum/contract
     name: iUSDFixedPriceOracle
     network: mainnet
@@ -242,12 +248,14 @@ dataSources:
       abis:
         - name: iUSDFixedPriceOracle
           file: ./abis/iUSDFixedPriceOracle.json
+        - name: LeverageManager
+          file: ./abis/LeverageManager.json
       entities:
         - iUSDFixedPriceOracle
       eventHandlers:
         - event: PriceSet(indexed uint256,uint256)
           handler: handleIUSDFixedPriceOraclePriceSet
-      file: ./src/siUSD.ts
+      file: ./src/siUsd.ts
   #  Commenting out MorphoBlue for now, as we're not indexing MorphoBlue events at the moment
   # - kind: ethereum
   #   name: MorphoBlue
