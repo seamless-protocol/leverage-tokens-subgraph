@@ -112,13 +112,6 @@ export function handleBlock(block: ethereum.Block): void {
     siUsdUsdcOracle.price = baseVaultPrice.times(SIUSD_USDC_ORACLE_SCALE_FACTOR).times(_iUSDFixedPriceOracle.price).div(USDC_ORACLE_QUOTE_FEED_1_PRICE)
     siUsdUsdcOracle.save()
 
-    let priceUpdate = new OraclePrice(0)
-    priceUpdate.oracle = siUsdUsdcOracle.id
-    priceUpdate.price = siUsdUsdcOracle.price
-    priceUpdate.timestamp = block.timestamp.toI64()
-    priceUpdate.blockNumber = block.number
-    priceUpdate.save()
-
     // Update state history for all LeverageTokens that use this oracle
     const leverageManager = LeverageManager.load(Address.fromHexString(LEVERAGE_MANAGER_ADDRESS))
     if (!leverageManager) {
@@ -126,7 +119,17 @@ export function handleBlock(block: ethereum.Block): void {
     }
 
     const lendingAdapters = siUsdUsdcOracle.lendingAdapters.load()
-    updateLeverageTokenStatesForOracle(leverageManager, lendingAdapters, siUsdUsdcOracle, block)
+
+    if (lendingAdapters.length > 0) {
+        let priceUpdate = new OraclePrice(0)
+        priceUpdate.oracle = siUsdUsdcOracle.id
+        priceUpdate.price = siUsdUsdcOracle.price
+        priceUpdate.timestamp = block.timestamp.toI64()
+        priceUpdate.blockNumber = block.number
+        priceUpdate.save()
+
+        updateLeverageTokenStatesForOracle(leverageManager, lendingAdapters, siUsdUsdcOracle, block)
+    }
 }
 
 export function handleIUSDFixedPriceOraclePriceSet(event: IUSDFixedPriceOraclePriceSetEvent): void {
