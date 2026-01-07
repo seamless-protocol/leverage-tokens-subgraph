@@ -1,4 +1,4 @@
-import { Address, ethereum } from "@graphprotocol/graph-ts";
+import { Address, ethereum, log } from "@graphprotocol/graph-ts";
 import { CHAINLINK_ORACLE_POLLING_ADDRESSES } from "./constants/addresses";
 import { Oracle, OraclePrice } from "../generated/schema";
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/ChainlinkOraclePolling/MorphoChainlinkOracleV2"
