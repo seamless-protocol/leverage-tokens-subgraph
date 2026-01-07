@@ -1,7 +1,9 @@
 import { Address, ethereum, log } from "@graphprotocol/graph-ts";
 import { CHAINLINK_ORACLE_POLLING_ADDRESSES } from "./constants/addresses";
-import { Oracle, OraclePrice } from "../generated/schema";
+import { LeverageManager, Oracle, OraclePrice } from "../generated/schema";
 import { MorphoChainlinkOracleV2 as MorphoChainlinkOracleV2Contract } from "../generated/ChainlinkOraclePolling/MorphoChainlinkOracleV2"
+import { updateLeverageTokenStatesForOracle } from "./utils";
+import { LEVERAGE_MANAGER_ADDRESS } from "./constants/addresses";
 
 export function handleBlock(block: ethereum.Block): void {
     for (let i = 0; i < CHAINLINK_ORACLE_POLLING_ADDRESSES.length; i++) {
@@ -28,5 +30,14 @@ export function handleBlock(block: ethereum.Block): void {
         priceUpdate.timestamp = block.timestamp.toI64()
         priceUpdate.blockNumber = block.number
         priceUpdate.save()
+
+        // Update state history for all LeverageTokens that use this oracle
+        const leverageManager = LeverageManager.load(Address.fromHexString(LEVERAGE_MANAGER_ADDRESS))
+        if (!leverageManager) {
+            return
+        }
+
+        const lendingAdapters = oracle.lendingAdapters.load()
+        updateLeverageTokenStatesForOracle(leverageManager, lendingAdapters, oracle, block)
     }
 }
