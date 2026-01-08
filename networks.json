@@ -37,8 +37,7 @@
     "ChainlinkOraclePolling": {
       "every": 1788,
       "oracles": [
-        "0xC86CfE9dE224bf0A14Ea83949591a54467BE647D",
-        "0xE1a701F28a95ECC49d671dc477f66A61Ac976f47"
+        "0x0c426d174fc88b7a25d59945ab2f7274bf7b4c79"
       ]
     }
   },

@@ -43,6 +43,7 @@ import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { LendingAdapterType, LeverageTokenBalanceChangeType, MAX_UINT256_STRING, OracleType, RebalanceActionType, WAD_STRING } from "./constants"
 import { getLeverageManagerStub, getPositionStub } from "./stubs"
 import { convertToEquity, calculateMorphoChainlinkPrice, convertCollateralToDebt, convertDebtToCollateral, getPosition } from "./utils"
+import { CHAINLINK_ORACLE_POLLING_ADDRESSES } from "./constants/addresses"
 
 export function handleLeverageManagerInitialized(
   event: LeverageManagerInitializedEvent
@@ -473,72 +474,88 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       oracle.leverageManager = leverageManager.id
       oracle.type = OracleType.MORPHO_CHAINLINK
 
-      let morphoChainlinkOracleData = MorphoChainlinkOracleData.load(oracleAddress)
-      if (!morphoChainlinkOracleData) {
-        morphoChainlinkOracleData = new MorphoChainlinkOracleData(oracleAddress)
-        morphoChainlinkOracleData.oracle = oracle.id
-      }
-      oracle.morphoChainlinkOracleData = morphoChainlinkOracleData.id
-
-      const baseFeedA = morphoChainlinkOracleContract.BASE_FEED_1()
-      const baseFeedBAddress = morphoChainlinkOracleContract.BASE_FEED_2()
-      const quoteFeedAAddress = morphoChainlinkOracleContract.QUOTE_FEED_1()
-      const quoteFeedBAddress = morphoChainlinkOracleContract.QUOTE_FEED_2()
-
-      const feeds = [baseFeedA, baseFeedBAddress, quoteFeedAAddress, quoteFeedBAddress];
-
-      // Most feeds will have a separate aggregator contract, but some may not
-      // e.g. https://etherscan.io/address/0xbDd2F2D473E8D63d1BFb0185B5bDB8046ca48a72#readContract
-      const feedsWithAggregators = feeds.map<Address>((feed) => {
-        const aggregatorResult = ChainlinkEACAggregatorProxyContract.bind(feed).try_aggregator()
-        if (aggregatorResult.reverted) {
-          return feed
-        }
-        return aggregatorResult.value
-      })
-
-      morphoChainlinkOracleData.baseVault = morphoChainlinkOracleContract.BASE_VAULT()
-      morphoChainlinkOracleData.quoteVault = morphoChainlinkOracleContract.QUOTE_VAULT()
-      morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
-
-      for (let i = 0; i < feedsWithAggregators.length; i++) {
-        const aggregatorAddress = feedsWithAggregators[i]
-        if (aggregatorAddress.equals(Address.zero())) {
-          continue
-        }
-
-        const aggregatorContract = ChainlinkAggregatorContract.bind(aggregatorAddress)
-        let aggregator = ChainlinkAggregator.load(aggregatorContract._address)
-        if (!aggregator) {
-          ChainlinkAggregatorTemplate.create(aggregatorContract._address)
-          aggregator = new ChainlinkAggregator(aggregatorContract._address)
-
-          const decimals = aggregatorContract.decimals()
-          const latestRoundData = aggregatorContract.latestRoundData()
-
-          aggregator.price = latestRoundData.getAnswer()
-          aggregator.decimals = decimals
-          aggregator.save()
-        }
-
-        if (i === 0) {
-          morphoChainlinkOracleData.baseAggregatorA = aggregator.id
-        } else if (i === 1) {
-          morphoChainlinkOracleData.baseAggregatorB = aggregator.id
-        } else if (i === 2) {
-          morphoChainlinkOracleData.quoteAggregatorA = aggregator.id
-        } else if (i === 3) {
-          morphoChainlinkOracleData.quoteAggregatorB = aggregator.id
-        }
-      }
-
-
       const collateralTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.collateralAsset)).decimals()
       const debtTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.debtAsset)).decimals()
 
       // MorphoChainlinkOracleV2 returns price in 36 + loan token decimals - collateral token decimals precision
       oracle.decimals = 36 + debtTokenDecimals - collateralTokenDecimals
-      oracle.price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
+
+      // AssemblyScript does not support some() or includes() methods, so we use a for loop instead
+      let oracleAddressIsInPollingAddresses = false;
+      for (let i = 0; i < CHAINLINK_ORACLE_POLLING_ADDRESSES.length; i++) {
+        if (Address.fromString(CHAINLINK_ORACLE_POLLING_ADDRESSES[i]).equals(oracleAddress)) {
+          oracleAddressIsInPollingAddresses = true;
+          break;
+        }
+      }
+
+      if (oracleAddressIsInPollingAddresses) {
+        oracle.price = morphoChainlinkOracleContract.price()
+      } else {
+        let morphoChainlinkOracleData = MorphoChainlinkOracleData.load(oracleAddress)
+        if (!morphoChainlinkOracleData) {
+          morphoChainlinkOracleData = new MorphoChainlinkOracleData(oracleAddress)
+          morphoChainlinkOracleData.oracle = oracle.id
+        }
+        oracle.morphoChainlinkOracleData = morphoChainlinkOracleData.id
+
+        const baseFeedA = morphoChainlinkOracleContract.BASE_FEED_1()
+        const baseFeedBAddress = morphoChainlinkOracleContract.BASE_FEED_2()
+        const quoteFeedAAddress = morphoChainlinkOracleContract.QUOTE_FEED_1()
+        const quoteFeedBAddress = morphoChainlinkOracleContract.QUOTE_FEED_2()
+
+        const feeds = [baseFeedA, baseFeedBAddress, quoteFeedAAddress, quoteFeedBAddress];
+
+        // Most feeds will have a separate aggregator contract, but some may not
+        // e.g. https://etherscan.io/address/0xbDd2F2D473E8D63d1BFb0185B5bDB8046ca48a72#readContract
+        const feedsWithAggregators = feeds.map<Address>((feed) => {
+          const aggregatorResult = ChainlinkEACAggregatorProxyContract.bind(feed).try_aggregator()
+          if (aggregatorResult.reverted) {
+            return feed
+          }
+          return aggregatorResult.value
+        })
+
+        morphoChainlinkOracleData.baseVault = morphoChainlinkOracleContract.BASE_VAULT()
+        morphoChainlinkOracleData.quoteVault = morphoChainlinkOracleContract.QUOTE_VAULT()
+        morphoChainlinkOracleData.scaleFactor = morphoChainlinkOracleContract.SCALE_FACTOR()
+
+        for (let i = 0; i < feedsWithAggregators.length; i++) {
+          const aggregatorAddress = feedsWithAggregators[i]
+          if (aggregatorAddress.equals(Address.zero())) {
+            continue
+          }
+
+          const aggregatorContract = ChainlinkAggregatorContract.bind(aggregatorAddress)
+          let aggregator = ChainlinkAggregator.load(aggregatorContract._address)
+          if (!aggregator) {
+            ChainlinkAggregatorTemplate.create(aggregatorContract._address)
+            aggregator = new ChainlinkAggregator(aggregatorContract._address)
+
+            const decimals = aggregatorContract.decimals()
+            const latestRoundData = aggregatorContract.latestRoundData()
+
+            aggregator.price = latestRoundData.getAnswer()
+            aggregator.decimals = decimals
+            aggregator.save()
+          }
+
+          if (i === 0) {
+            morphoChainlinkOracleData.baseAggregatorA = aggregator.id
+          } else if (i === 1) {
+            morphoChainlinkOracleData.baseAggregatorB = aggregator.id
+          } else if (i === 2) {
+            morphoChainlinkOracleData.quoteAggregatorA = aggregator.id
+          } else if (i === 3) {
+            morphoChainlinkOracleData.quoteAggregatorB = aggregator.id
+          }
+
+          morphoChainlinkOracleData.save()
+        }
+
+        oracle.price = calculateMorphoChainlinkPrice(morphoChainlinkOracleData)
+      }
+      
       oracle.save()
 
       const priceUpdate = new OraclePrice(0)
@@ -547,8 +564,6 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       priceUpdate.timestamp = event.block.timestamp.toI64()
       priceUpdate.blockNumber = event.block.number
       priceUpdate.save()
-
-      morphoChainlinkOracleData.save()
     }
 
     lendingAdapter.oracle = oracle.id
