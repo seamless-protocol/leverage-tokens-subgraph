@@ -285,7 +285,14 @@ export function handleRebalance(event: RebalanceEvent): void {
   if (!oracle) {
     return
   }
+  const leverageManagerCollateralAssetStats = LeverageManagerAssetStats.load(lendingAdapter.collateralAsset)
+  if (!leverageManagerCollateralAssetStats) {
+    return
+  }
 
+  const leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageToken.leverageManager))
+  const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
+  
   const rebalance = new Rebalance(`${event.transaction.hash.toHexString()}-${event.logIndex.toString()}`)
   rebalance.leverageToken = leverageToken.id
   rebalance.collateralRatioBefore = event.params.stateBefore.collateralRatio
@@ -301,6 +308,7 @@ export function handleRebalance(event: RebalanceEvent): void {
   rebalance.save()
 
   const leverageTokenRebalanceHistoryLength = leverageToken.rebalanceHistory.load().length;
+  let collateralDelta = BigInt.zero()
   for (let i = 0; i < event.params.actions.length; i++) {
     const actionData = event.params.actions[i]
 
@@ -309,7 +317,47 @@ export function handleRebalance(event: RebalanceEvent): void {
     action.amount = actionData.amount
     action.rebalance = rebalance.id
     action.save()
+
+    if (actionData.actionType == 0) {
+      collateralDelta = collateralDelta.plus(actionData.amount)
+    } else if (actionData.actionType == 1) {
+      collateralDelta = collateralDelta.minus(actionData.amount)
+    }
   }
+
+  if (!collateralDelta.isZero()) {
+    leverageToken.totalCollateral = leverageToken.totalCollateral.plus(collateralDelta)
+    leverageToken.totalCollateralInDebt = convertCollateralToDebt(oracle, leverageToken.totalCollateral)
+    leverageManagerCollateralAssetStats.totalCollateral = leverageManagerCollateralAssetStats.totalCollateral.plus(collateralDelta)
+    leverageManagerCollateralAssetStats.save()
+  }
+  leverageToken.collateralRatio = event.params.stateAfter.collateralRatio
+  leverageToken.save()
+
+  const totalEquityInCollateral = convertDebtToCollateral(oracle, leverageTokenState.equity)
+  const totalEquityInDebt = leverageTokenState.equity
+
+  const leverageTokenStateUpdate = new LeverageTokenState(0)
+  leverageTokenStateUpdate.leverageToken = leverageToken.id
+  leverageTokenStateUpdate.totalCollateral = leverageToken.totalCollateral
+  leverageTokenStateUpdate.totalDebt = leverageTokenState.debt
+  leverageTokenStateUpdate.totalEquityInCollateral = totalEquityInCollateral
+  leverageTokenStateUpdate.totalEquityInDebt = totalEquityInDebt
+  leverageTokenStateUpdate.collateralRatio = event.params.stateAfter.collateralRatio
+  leverageTokenStateUpdate.totalSupply = leverageToken.totalSupply
+  leverageTokenStateUpdate.equityPerTokenInCollateral = convertToEquity(
+    BigInt.fromString(WAD_STRING),
+    totalEquityInCollateral,
+    leverageToken.totalSupply
+  )
+  leverageTokenStateUpdate.equityPerTokenInDebt = convertToEquity(
+    BigInt.fromString(WAD_STRING),
+    totalEquityInDebt,
+    leverageToken.totalSupply
+  )
+  leverageTokenStateUpdate.timestamp = event.block.timestamp.toI64()
+  leverageTokenStateUpdate.blockNumber = event.block.number
+  leverageTokenStateUpdate.save()
 }
 
 export function handleRedeemV0(event: RedeemEventV0): void {
