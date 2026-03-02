@@ -49,6 +49,10 @@ type LeverageToken @entity(immutable: false) {
 
     " Address of the LeverageToken "
     id: Bytes!
+    " Name of the LeverageToken "
+    name: String!
+    " Symbol of the LeverageToken "
+    symbol: String!
     " The LeverageManager that manages this LeverageToken "
     leverageManager: LeverageManager!
     " The LendingAdapter used by this LeverageToken "
@@ -113,8 +117,12 @@ type LendingAdapter @entity(immutable: true) {
     morphoMarketId: Bytes
     " Address of the collateral asset "
     collateralAsset: Bytes!
+    " Decimals of the collateral asset "
+    collateralAssetDecimals: Int!
     " Address of the debt asset "
     debtAsset: Bytes!
+    " Decimals of the debt asset "
+    debtAssetDecimals: Int!
     " The oracle used by the LendingAdapter "
     oracle: Oracle!
     " The LeverageTokens using this LendingAdapter "
@@ -166,6 +174,8 @@ type LeverageTokenBalanceChange @entity(timeseries: true) {
     equityDepositedInCollateral: BigInt!
     " The amount the user deposited for the shares in the debt asset "
     equityDepositedInDebt: BigInt!
+    " The transaction hash of this data point "
+    transactionHash: Bytes!
     " The timestamp of this data point "
     timestamp: Timestamp!
     " The block number of this data point "

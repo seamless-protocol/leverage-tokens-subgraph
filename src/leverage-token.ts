@@ -84,6 +84,7 @@ export function handleTransfer(event: TransferEvent): void {
     fromBalanceChange.equityInDebt = equityInDebtDelta.neg()
     fromBalanceChange.equityDepositedInCollateral = equityDepositedForSharesInCollateral.neg()
     fromBalanceChange.equityDepositedInDebt = equityDepositedForSharesInDebt.neg()
+    fromBalanceChange.transactionHash = event.transaction.hash
     fromBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
     fromBalanceChange.save()
 
@@ -125,6 +126,7 @@ export function handleTransfer(event: TransferEvent): void {
     toBalanceChange.equityInDebt = equityInDebtDelta
     toBalanceChange.equityDepositedInCollateral = equityInCollateralDelta
     toBalanceChange.equityDepositedInDebt = equityInDebtDelta
+    toBalanceChange.transactionHash = event.transaction.hash
     toBalanceChange.type = LeverageTokenBalanceChangeType.TRANSFER
     toBalanceChange.save()
 

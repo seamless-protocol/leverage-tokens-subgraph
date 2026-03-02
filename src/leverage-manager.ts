@@ -75,6 +75,10 @@ export function handleLeverageTokenCreated(
   LeverageTokenTemplate.create(event.params.token)
   const leverageToken = new LeverageToken(event.params.token)
 
+  const leverageTokenContract = ERC20Contract.bind(event.params.token)
+  leverageToken.name = leverageTokenContract.name()
+  leverageToken.symbol = leverageTokenContract.symbol()
+
   leverageToken.leverageManager = leverageManager.id
 
   leverageToken.createdTimestamp = event.block.timestamp
@@ -229,6 +233,7 @@ export function handleMint(event: MintEvent): void {
   balanceUpdate.equityInDebt = equityAddedInDebt
   balanceUpdate.equityDepositedInCollateral = equityAddedInCollateral
   balanceUpdate.equityDepositedInDebt = equityAddedInDebt
+  balanceUpdate.transactionHash = event.transaction.hash
   balanceUpdate.timestamp = event.block.timestamp.toI64()
   balanceUpdate.blockNumber = event.block.number
   balanceUpdate.type = LeverageTokenBalanceChangeType.MINT
@@ -292,7 +297,7 @@ export function handleRebalance(event: RebalanceEvent): void {
 
   const leverageManagerContract = LeverageManagerContract.bind(Address.fromBytes(leverageToken.leverageManager))
   const leverageTokenState = leverageManagerContract.getLeverageTokenState(event.params.token)
-  
+
   const rebalance = new Rebalance(`${event.transaction.hash.toHexString()}-${event.logIndex.toString()}`)
   rebalance.leverageToken = leverageToken.id
   rebalance.collateralRatioBefore = event.params.stateBefore.collateralRatio
@@ -459,6 +464,7 @@ export function handleRedeem(event: RedeemEvent): void {
   balanceUpdate.equityInDebt = equityRemovedInDebt.neg()
   balanceUpdate.equityDepositedInCollateral = equityDepositedForSharesInCollateral.neg()
   balanceUpdate.equityDepositedInDebt = equityDepositedForSharesInDebt.neg()
+  balanceUpdate.transactionHash = event.transaction.hash
   balanceUpdate.timestamp = event.block.timestamp.toI64()
   balanceUpdate.blockNumber = event.block.number
   balanceUpdate.type = LeverageTokenBalanceChangeType.REDEEM
@@ -513,6 +519,12 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
     lendingAdapter.collateralAsset = marketParams.getCollateralToken()
     lendingAdapter.debtAsset = marketParams.getLoanToken()
 
+    const collateralTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.collateralAsset)).decimals()
+    const debtTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.debtAsset)).decimals()
+
+    lendingAdapter.collateralAssetDecimals = collateralTokenDecimals
+    lendingAdapter.debtAssetDecimals = debtTokenDecimals
+
     const oracleAddress = marketParams.getOracle();
     let oracle = Oracle.load(oracleAddress);
     if (!oracle) {
@@ -521,9 +533,6 @@ function initLendingAdapter(event: LeverageTokenCreatedEvent, leverageManager: L
       oracle = new Oracle(oracleAddress);
       oracle.leverageManager = leverageManager.id
       oracle.type = OracleType.MORPHO_CHAINLINK
-
-      const collateralTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.collateralAsset)).decimals()
-      const debtTokenDecimals = ERC20Contract.bind(Address.fromBytes(lendingAdapter.debtAsset)).decimals()
 
       // MorphoChainlinkOracleV2 returns price in 36 + loan token decimals - collateral token decimals precision
       oracle.decimals = 36 + debtTokenDecimals - collateralTokenDecimals
