@@ -339,25 +339,22 @@ export function handleRebalance(event: RebalanceEvent): void {
   leverageToken.collateralRatio = event.params.stateAfter.collateralRatio
   leverageToken.save()
 
-  const totalEquityInCollateral = convertDebtToCollateral(oracle, leverageTokenState.equity)
-  const totalEquityInDebt = leverageTokenState.equity
-
   const leverageTokenStateUpdate = new LeverageTokenState(0)
   leverageTokenStateUpdate.leverageToken = leverageToken.id
   leverageTokenStateUpdate.totalCollateral = leverageToken.totalCollateral
   leverageTokenStateUpdate.totalDebt = leverageTokenState.debt
-  leverageTokenStateUpdate.totalEquityInCollateral = totalEquityInCollateral
-  leverageTokenStateUpdate.totalEquityInDebt = totalEquityInDebt
+  leverageTokenStateUpdate.totalEquityInCollateral = rebalance.equityInCollateralAfter 
+  leverageTokenStateUpdate.totalEquityInDebt = rebalance.equityInDebtAfter
   leverageTokenStateUpdate.collateralRatio = event.params.stateAfter.collateralRatio
   leverageTokenStateUpdate.totalSupply = leverageToken.totalSupply
   leverageTokenStateUpdate.equityPerTokenInCollateral = convertToEquity(
     BigInt.fromString(WAD_STRING),
-    totalEquityInCollateral,
+    rebalance.equityInCollateralAfter,
     leverageToken.totalSupply
   )
   leverageTokenStateUpdate.equityPerTokenInDebt = convertToEquity(
     BigInt.fromString(WAD_STRING),
-    totalEquityInDebt,
+    rebalance.equityInDebtAfter,
     leverageToken.totalSupply
   )
   leverageTokenStateUpdate.timestamp = event.block.timestamp.toI64()
